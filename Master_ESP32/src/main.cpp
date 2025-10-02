@@ -27,7 +27,19 @@ bool victronReady = false;  // True when Victron is ready to receive commands
 unsigned long lastStatusUpdate = 0;
 
 // ============ COMMAND QUEUE ============
+#define MASTER_QUEUE_SIZE 10
+struct QueuedCommand {
+    uint8_t device;
+    uint8_t command;
+    int16_t value1;
+    int16_t value2;
+};
+QueuedCommand masterQueue[MASTER_QUEUE_SIZE];
+uint8_t masterQueueHead = 0;
+uint8_t masterQueueTail = 0;
+uint8_t masterQueueCount = 0;
 uint32_t nextCommandId = 1;
+unsigned long lastSendAttempt = 0;
 
 // ============ ESP-NOW CALLBACKS ============
 
@@ -74,30 +86,51 @@ void onDataReceive(const esp_now_recv_info *recv_info, const uint8_t *data, int 
     }
 }
 
-// Send command to Victron ESP32
-bool sendCommand(uint8_t device, uint8_t command, int16_t value1, int16_t value2) {
-    if (!victronReady) {
-        Serial.println("[COMMAND] ✗ Victron is SCANNING - cannot send command");
-        Serial.printf("[COMMAND]    Last status update: %lu ms ago\n", millis() - lastStatusUpdate);
+// Queue a command for sending
+bool queueCommand(uint8_t device, uint8_t command, int16_t value1, int16_t value2) {
+    if (masterQueueCount >= MASTER_QUEUE_SIZE) {
+        Serial.println("[QUEUE] ✗ Queue full! Cannot add command");
         return false;
     }
 
-    ControlCommand cmd;
-    cmd.commandId = nextCommandId++;
-    cmd.device = device;
-    cmd.command = command;
-    cmd.value1 = value1;
-    cmd.value2 = value2;
-    cmd.timestamp = millis();
+    masterQueue[masterQueueTail].device = device;
+    masterQueue[masterQueueTail].command = command;
+    masterQueue[masterQueueTail].value1 = value1;
+    masterQueue[masterQueueTail].value2 = value2;
 
-    Serial.printf("[COMMAND] ✓ Victron is READY - Sending command #%d (device=%d, cmd=%d, v1=%d, v2=%d)\n",
-                 cmd.commandId, device, command, value1, value2);
+    masterQueueTail = (masterQueueTail + 1) % MASTER_QUEUE_SIZE;
+    masterQueueCount++;
 
-    esp_err_t result = esp_now_send(victronMAC, (uint8_t*)&cmd, sizeof(cmd));
-    Serial.printf("[COMMAND] esp_now_send result: %d (%s)\n",
-                 result, result == ESP_OK ? "ESP_OK" : "ERROR");
+    Serial.printf("[QUEUE] ✓ Command queued (count: %d)\n", masterQueueCount);
+    return true;
+}
 
-    return (result == ESP_OK);
+// Process queued commands (called from loop)
+void processMasterQueue() {
+    if (masterQueueCount == 0) return;
+    if (!victronReady) return;
+
+    // Throttle sends to once per 100ms
+    if (millis() - lastSendAttempt < 100) return;
+    lastSendAttempt = millis();
+
+    // Send next command from queue
+    QueuedCommand cmd = masterQueue[masterQueueHead];
+    masterQueueHead = (masterQueueHead + 1) % MASTER_QUEUE_SIZE;
+    masterQueueCount--;
+
+    ControlCommand espCmd;
+    espCmd.commandId = nextCommandId++;
+    espCmd.device = cmd.device;
+    espCmd.command = cmd.command;
+    espCmd.value1 = cmd.value1;
+    espCmd.value2 = cmd.value2;
+    espCmd.timestamp = millis();
+
+    Serial.printf("[SEND] Sending command #%d (device=%d, cmd=%d) | Queue remaining: %d\n",
+                 espCmd.commandId, cmd.device, cmd.command, masterQueueCount);
+
+    esp_now_send(victronMAC, (uint8_t*)&espCmd, sizeof(espCmd));
 }
 
 // ============ WEB SERVER HANDLERS ============
@@ -205,9 +238,9 @@ void handleFridge() {
 }
 
 void handleTest() {
-    Serial.println("[WEB] TEST button pressed - sending test command");
+    Serial.println("[WEB] TEST button pressed - queueing test command");
 
-    bool success = sendCommand(1, CMD_FRIDGE_SET_TEMP, 0, 4);  // Zone 0, Temp 4°C
+    bool success = queueCommand(1, CMD_FRIDGE_SET_TEMP, 0, 4);  // Zone 0, Temp 4°C
 
     server.sendHeader("Location", "/");
     server.send(303);
@@ -222,9 +255,9 @@ void handleFridgeCommand() {
     int8_t zone = server.arg("zone").toInt();
     int8_t temp = server.arg("temp").toInt();
 
-    Serial.printf("[WEB] Fridge command: Zone %d to %d°C\n", zone, temp);
+    Serial.printf("[WEB] Fridge command: Zone %d to %d°C - queueing\n", zone, temp);
 
-    bool success = sendCommand(1, CMD_FRIDGE_SET_TEMP, zone, temp);
+    bool success = queueCommand(1, CMD_FRIDGE_SET_TEMP, zone, temp);
 
     server.sendHeader("Location", "/fridge");
     server.send(303);
@@ -308,5 +341,6 @@ void setup() {
 // ============ LOOP ============
 void loop() {
     server.handleClient();
+    processMasterQueue();  // Send queued commands when Victron is ready
     yield();
 }
