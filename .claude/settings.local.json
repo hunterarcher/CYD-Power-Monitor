@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone:*)",
+      "Bash(mkdir:*)",
+      "Read(//c/Users/LENOVO/.platformio/packages/framework-arduinoespressif32/libraries/BLE/src/**)",
+      "Read(//c/Users/LENOVO/.platformio/packages/framework-arduinoespressif32/libraries/BLE/examples/BLE_Beacon_Scanner/**)",
+      "Bash(platformio run:*)",
+      "Bash(C:UsersLENOVO.platformiopenvScriptsplatformio.exe run)",
+      "Bash(\"C:\\Users\\LENOVO\\.platformio\\penv\\Scripts\\platformio.exe\" run)",
+      "Bash(tee:*)",
+      "Bash(\"C:\\Users\\LENOVO\\.platformio\\penv\\Scripts\\platformio.exe\" run --target upload)",
+      "Bash(\"C:\\Users\\LENOVO\\.platformio\\penv\\Scripts\\platformio.exe\" run --target erase)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:community.home-assistant.io)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

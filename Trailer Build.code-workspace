@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "Victron_ESP32"
+		},
+		{
+			"path": "Master_ESP32"
+		},
+		{
+			"path": "Victron_ESP32_V2"
+		},
+		{
+			"path": "Master_ESP32_V2"
+		}
+	],
+	"settings": {}
+}

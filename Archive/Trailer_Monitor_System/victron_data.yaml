@@ -1,0 +1,90 @@
+esphome:
+  name: victron-data
+  friendly_name: Victron BLE Data Parser
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Over-The-Air updates
+ota:
+  - platform: esphome
+    password: "VictronData2025"
+
+# WiFi configuration
+wifi:
+  ssid: "Rocket"
+  password: "Ed1nburgh2015!"
+  
+  # Enable fallback hotspot if WiFi fails
+  ap:
+    ssid: "Victron-Data"
+    password: "12345678"
+
+captive_portal:
+
+# Enable Bluetooth
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+# Custom component to parse Victron data
+custom_component:
+  - lambda: |-
+      auto victron_parser = new VictronBLEParser();
+      App.register_component(victron_parser);
+      return {victron_parser};
+
+# Sensors to display parsed data
+sensor:
+  - platform: template
+    name: "Battery Voltage"
+    id: battery_voltage
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    update_interval: 10s
+    
+  - platform: template
+    name: "Battery Current"  
+    id: battery_current
+    unit_of_measurement: "A"
+    accuracy_decimals: 2
+    update_interval: 10s
+    
+  - platform: template
+    name: "Solar Voltage"
+    id: solar_voltage
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    update_interval: 10s
+    
+  - platform: template
+    name: "Solar Current"
+    id: solar_current
+    unit_of_measurement: "A"
+    accuracy_decimals: 2
+    update_interval: 10s
+
+  - platform: uptime
+    name: "Uptime"
+    update_interval: 60s
+
+# Web server for monitoring
+web_server:
+  port: 80
+
+# Status updates every 30 seconds
+interval:
+  - interval: 30s
+    then:
+      - logger.log:
+          format: "Battery: %.2fV/%.2fA | Solar: %.2fV/%.2fA"
+          args: ['id(battery_voltage).state', 'id(battery_current).state', 'id(solar_voltage).state', 'id(solar_current).state']
+          level: INFO
