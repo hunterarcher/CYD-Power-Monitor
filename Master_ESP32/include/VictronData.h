@@ -78,23 +78,44 @@ struct FridgeData {
     bool valid;                 // Data is valid
 };
 
-// Combined packet sent via ESP-NOW
+// Command packet (Master → Victron)
+struct ControlCommand {
+    uint32_t commandId;         // Unique command ID for tracking
+    uint8_t device;             // Target device (1=Fridge)
+    uint8_t command;            // Command type
+    int16_t value1;             // Parameter 1
+    int16_t value2;             // Parameter 2
+    unsigned long timestamp;    // When command was sent
+};
+
+// ACK packet (Victron → Master)
+struct CommandAck {
+    uint32_t commandId;         // Which command this ACKs
+    bool received;              // Command received and queued
+    bool executed;              // Command executed successfully
+    uint8_t errorCode;          // 0=success, other=error
+    unsigned long timestamp;
+};
+
+// Status packet (Victron → Master) - signals when ready/scanning
+struct StatusMessage {
+    uint8_t type;               // 0=SCANNING, 1=READY
+    unsigned long timestamp;
+};
+
+#define STATUS_SCANNING 0
+#define STATUS_READY 1
+
+// Combined packet sent via ESP-NOW (Victron → Master)
 struct VictronPacket {
     BMVData bmv;
     MPPTData mppt;
     IP22Data ip22;
     EcoFlowData ecoflow;
-    FridgeData fridge;          // NEW: Fridge data
+    FridgeData fridge;
     uint32_t packetId;          // Incremental packet counter
     unsigned long senderTime;
-};
-
-// Control command structure (bidirectional ESP-NOW)
-struct ControlCommand {
-    uint8_t device;     // 0=Victron, 1=EcoFlow, 2=Fridge
-    uint8_t command;    // Command type
-    int16_t value1;     // Parameter 1
-    int16_t value2;     // Parameter 2
+    bool readyForCommand;       // True when Victron can receive commands
 };
 
 // Fridge control commands
