@@ -619,7 +619,7 @@ void handleFridge() {
     html += "else if(params.has('level')){checkType='bat';expectedBat=parseInt(params.get('level'));showStatus('Setting battery protection...');setTimeout(checkUpdate,3000);}";
     html += "</script></head><body>";
 
-    html += "<button class='action-btn secondary' onclick='refresh()' style='margin-bottom:10px'>🔄 Refresh</button><hr>";
+    html += "<button style='padding:8px 16px;background:#4af;color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:bold;margin-bottom:10px' onclick='refresh()'>🔄 Refresh</button><hr>";
 
     // Status message
     html += "<div id='status' style='display:none;padding:12px;margin:10px 0;background:#248;color:#fff;border-radius:8px;text-align:center;font-weight:bold'></div>";
@@ -642,17 +642,17 @@ void handleFridge() {
 
     // Quick adjust buttons
     html += "<div style='display:flex;gap:8px;justify-content:center;margin:10px 0'>";
-    html += "<button class='action-btn secondary' onclick='adjustTemp(-5)' style='flex:1'>-5</button>";
-    html += "<button class='action-btn secondary' onclick='adjustTemp(-1)' style='flex:1'>-1</button>";
-    html += "<button class='action-btn secondary' onclick='adjustTemp(1)' style='flex:1'>+1</button>";
-    html += "<button class='action-btn secondary' onclick='adjustTemp(5)' style='flex:1'>+5</button>";
+    html += "<button onclick='adjustTemp(-5)' style='flex:1;padding:12px 20px;background:#4af;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold'>-5</button>";
+    html += "<button onclick='adjustTemp(-1)' style='flex:1;padding:12px 20px;background:#4af;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold'>-1</button>";
+    html += "<button onclick='adjustTemp(1)' style='flex:1;padding:12px 20px;background:#4af;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold'>+1</button>";
+    html += "<button onclick='adjustTemp(5)' style='flex:1;padding:12px 20px;background:#4af;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold'>+5</button>";
     html += "</div>";
 
     html += "<div class='slider-wrapper'>";
     html += "<input type='range' min='-20' max='20' step='1' value='" + String(leftSet) + "' class='slider' id='slider' oninput='updateTemp(this.value)'>";
     html += "<div class='temp-labels'><span>-20°C</span><span>20°C</span></div>";
     html += "</div>";
-    html += "<button class='action-btn primary' onclick='setTemp()' style='width:90%;margin:15px 5%'>SET TEMPERATURE</button>";
+    html += "<button style='width:90%;padding:12px;font-size:1.1em;background:#4af;color:#000;border:none;border-radius:12px;margin:15px 5%;cursor:pointer;font-weight:bold' onclick='setTemp()'>SET TEMPERATURE</button>";
     html += "</div>";
 
     // ECO control with SET button
@@ -664,7 +664,7 @@ void handleFridge() {
     html += "<div class='tlabel'>ECO</div>";
     html += "</div>";
     html += "</div>";
-    html += "<button class='action-btn primary' onclick='setEco()'>SET ECO</button>";
+    html += "<button style='padding:12px 40px;font-size:1.1em;background:#4af;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold' onclick='setEco()'>SET ECO</button>";
     html += "</div>";
 
     // Status
@@ -678,8 +678,8 @@ void handleFridge() {
 
     // Navigation buttons
     html += "<div style='display:flex;gap:8px;margin:20px 0;padding:0 20px'>";
-    html += "<button class='action-btn primary' onclick='window.location.href=\"/\"' style='flex:1'>\u{1F3E0} Main Dashboard</button>";
-    html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"' style='flex:1'>\u{1F4C4} Inventory</button>";
+    html += "<button style='flex:1;padding:12px 20px;font-size:1.1em;background:#4af;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold' onclick='window.location.href=\"/\"'>\u{1F3E0} Main Dashboard</button>";
+    html += "<button style='flex:1;padding:12px 20px;font-size:1.1em;background:#4af;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold' onclick='window.location.href=\"/inventory\"'>\u{1F4C4} Inventory</button>";
     html += "</div>";
 
     html += "</body></html>";
