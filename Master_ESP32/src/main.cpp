@@ -9,6 +9,47 @@
 #include "VictronData.h"
 #include "DynamicInventory.h"
 
+// ============ GLOBAL INVENTORY ============
+std::vector<DynamicCategory> inventory;
+
+// ============ SMART DEFAULTS FOR TRAILER STATUS ============
+bool shouldLiveInTrailer(const String& itemName, const String& categoryName) {
+    String item = itemName;
+    String category = categoryName;
+    item.toLowerCase();
+    category.toLowerCase();
+    
+    // Items that should always be TRIP items (bought fresh)
+    if (item.indexOf("milk") >= 0 || item.indexOf("bread") >= 0 || item.indexOf("fresh") >= 0) return false;
+    if (item.indexOf("meat") >= 0 || item.indexOf("fish") >= 0 || item.indexOf("chicken") >= 0) return false;
+    if (item.indexOf("fruit") >= 0 || item.indexOf("vegetable") >= 0 || item.indexOf("lettuce") >= 0) return false;
+    if (item.indexOf("yogurt") >= 0 || item.indexOf("cheese") >= 0 || item.indexOf("cream") >= 0) return false;
+    if (item.indexOf("frozen") >= 0 || item.indexOf("ice") >= 0 || item.indexOf("beer") >= 0) return false;
+    if (item.indexOf("juice") >= 0 || item.indexOf("soda") >= 0) return false;
+    
+    // Items that should always be TRAILER items (non-perishable supplies)
+    if (item.indexOf("spice") >= 0 || item.indexOf("herb") >= 0 || item.indexOf("seasoning") >= 0) return true;
+    if (item.indexOf("oil") >= 0 || item.indexOf("vinegar") >= 0 || item.indexOf("sauce") >= 0) return true;
+    if (item.indexOf("salt") >= 0 || item.indexOf("pepper") >= 0 || item.indexOf("sugar") >= 0) return true;
+    if (item.indexOf("flour") >= 0 || item.indexOf("rice") >= 0 || item.indexOf("pasta") >= 0) return true;
+    if (item.indexOf("can") >= 0 || item.indexOf("canned") >= 0 || item.indexOf("jar") >= 0) return true;
+    if (item.indexOf("battery") >= 0 || item.indexOf("batteries") >= 0) return true;
+    if (item.indexOf("paper") >= 0 || item.indexOf("towel") >= 0 || item.indexOf("tissue") >= 0) return true;
+    if (item.indexOf("soap") >= 0 || item.indexOf("detergent") >= 0 || item.indexOf("cleaner") >= 0) return true;
+    if (item.indexOf("first aid") >= 0 || item.indexOf("medicine") >= 0 || item.indexOf("bandage") >= 0) return true;
+    if (item.indexOf("tool") >= 0 || item.indexOf("flashlight") >= 0 || item.indexOf("lighter") >= 0) return true;
+    
+    // Category-based defaults
+    if (category.indexOf("cleaning") >= 0) return true;
+    if (category.indexOf("tool") >= 0) return true;
+    if (category.indexOf("first aid") >= 0) return true;
+    if (category.indexOf("maintenance") >= 0) return true;
+    if (category.indexOf("food") >= 0 && category.indexOf("beverage") >= 0) return false; // Fresh food category
+    
+    // Default: trailer items (conservative approach - easier to change individual items)
+    return true;
+}
+
 // ============ FORWARD DECLARATIONS ============
 bool createBackup(String backupName);
 void rotateBackups();
@@ -62,6 +103,7 @@ unsigned long lastSendAttempt = 0;
 // ============ FUNCTION DECLARATIONS ============
 bool saveInventoryToSPIFFS();
 void loadInventoryFromSPIFFS();
+void initializeDefaultInventory();
 void sortCategoryItems(DynamicCategory& category);
 void sortAllInventory();
 
@@ -168,11 +210,14 @@ void handleRoot() {
     html.reserve(4096);  // Reserve ~4KB to reduce reallocations
 
     html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'>";
-    // iOS web app mode (hides Safari UI when added to home screen)
+    // PWA and iOS web app support
     html += "<meta name='apple-mobile-web-app-capable' content='yes'>";
     html += "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>";
+    html += "<meta name='apple-mobile-web-app-title' content='Trailer'>";
     html += "<meta name='mobile-web-app-capable' content='yes'>";
-    html += "<title>Power Monitor</title>";
+    html += "<link rel='manifest' href='/manifest.json'>";
+    html += "<link rel='apple-touch-icon' href='/icon-192.png'>";
+    html += "<title>Trailer Dashboard</title>";
 
     // Beautiful gradient-enhanced layout (matching fridge page style)
     html += "<style>";
@@ -236,6 +281,11 @@ void handleRoot() {
     html += "}";
 
     html += "</style>";
+    html += "<script>";
+    html += "if('serviceWorker' in navigator){";
+    html += "navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed'));";
+    html += "}";
+    html += "</script>";
     html += "<meta http-equiv='refresh' content='5'>";  // Auto-refresh every 5 seconds
     html += "</head><body>";
 
@@ -505,7 +555,10 @@ void handleFridge() {
     String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'>";
     html += "<meta name='apple-mobile-web-app-capable' content='yes'>";
     html += "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>";
+    html += "<meta name='apple-mobile-web-app-title' content='Trailer'>";
     html += "<meta name='mobile-web-app-capable' content='yes'>";
+    html += "<link rel='manifest' href='/manifest.json'>";
+    html += "<link rel='apple-touch-icon' href='/icon-192.png'>";
     html += "<title>Fridge Control</title>";
     html += "<style>";
     html += "*{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}";
@@ -687,6 +740,89 @@ void handleFridge() {
     server.send(200, "text/html; charset=UTF-8", html);
 }
 
+// ============ PWA SUPPORT HANDLERS ============
+
+void handleManifest() {
+    String manifest = R"({
+  "name": "Trailer Dashboard",
+  "short_name": "Trailer",
+  "description": "Complete trailer monitoring and control system",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#44aaff",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+})";
+    
+    server.send(200, "application/json", manifest);
+}
+
+void handleServiceWorker() {
+    String sw = R"(
+// Trailer Dashboard Service Worker
+const CACHE_NAME = 'trailer-dashboard-v1';
+const urlsToCache = [
+  '/',
+  '/fridge',
+  '/inventory'
+];
+
+self.addEventListener('install', function(event) {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(function(cache) {
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+self.addEventListener('fetch', function(event) {
+  event.respondWith(
+    caches.match(event.request)
+      .then(function(response) {
+        // Return cached version or fetch from network
+        return response || fetch(event.request);
+      }
+    )
+  );
+});
+)";
+    
+    server.send(200, "application/javascript", sw);
+}
+
+void handleIcon192() {
+    // Simple PNG icon data (192x192 trailer icon - base64 encoded minimal icon)
+    const char* iconData = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+    
+    // For now, send a placeholder response - you would store actual icon in SPIFFS
+    server.sendHeader("Cache-Control", "max-age=86400"); // Cache for 1 day
+    server.send(200, "image/png", "PNG icon placeholder - implement actual icon");
+}
+
+void handleIcon512() {
+    // Simple PNG icon data (512x512 trailer icon - base64 encoded minimal icon)  
+    const char* iconData = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+    
+    // For now, send a placeholder response - you would store actual icon in SPIFFS
+    server.sendHeader("Cache-Control", "max-age=86400"); // Cache for 1 day
+    server.send(200, "image/png", "PNG icon placeholder - implement actual icon");
+}
+
 void handleTest() {
     Serial.println("[WEB] TEST button pressed - queueing test command");
 
@@ -800,9 +936,16 @@ void handleTabContent() {
         }
         
         html += "<div class='summary-grid' style='grid-template-columns:repeat(3,1fr)'>";
-        html += "<div class='summary-card' onclick='filterStatus(1)' style='cursor:pointer'><div class='label'>OK Stock</div><div class='value' style='color:#22c55e'>" + String(okCount) + "</div></div>";
-        html += "<div class='summary-card' onclick='filterStatus(2)' style='cursor:pointer'><div class='label'>Low Stock</div><div class='value' style='color:#f59e0b'>" + String(lowCount) + "</div></div>";
-        html += "<div class='summary-card' onclick='filterStatus(3)' style='cursor:pointer'><div class='label'>Out of Stock</div><div class='value' style='color:#ef4444'>" + String(outCount) + "</div></div>";
+        html += "<div class='summary-card' onclick='filterStatus(0)' style='cursor:pointer'><div class='label'>OK Stock</div><div class='value' style='color:#22c55e'>" + String(okCount) + "</div></div>";
+        html += "<div class='summary-card' onclick='filterStatus(1)' style='cursor:pointer'><div class='label'>Low Stock</div><div class='value' style='color:#f59e0b'>" + String(lowCount) + "</div></div>";
+        html += "<div class='summary-card' onclick='filterStatus(2)' style='cursor:pointer'><div class='label'>Out of Stock</div><div class='value' style='color:#ef4444'>" + String(outCount) + "</div></div>";
+        html += "</div>";
+        
+        // Trailer filtering buttons
+        html += "<div style='margin:15px 0;text-align:center'>";
+        html += "<button onclick='filterTrailer(-1)' style='background:#667eea;color:white;border:none;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer'>All Items</button>";
+        html += "<button onclick='filterTrailer(1)' style='background:#4af;color:black;border:none;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer'>🚚 Lives in Trailer</button>";
+        html += "<button onclick='filterTrailer(0)' style='background:#ff6b35;color:white;border:none;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer'>🛒 Buy Each Trip</button>";
         html += "</div>";
         
         for (size_t i = 0; i < inventory.size(); i++) {
@@ -818,7 +961,9 @@ void handleTabContent() {
             
             html += "<div id='cat" + String(i) + "' class='items-container expanded'>";
             for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
-                html += "<div class='item' data-status='" + String(inventory[i].consumables[j].status) + "'><span class='item-name'>" + inventory[i].consumables[j].name + "</span>";
+                String trailerIcon = inventory[i].consumables[j].livesInTrailer ? "🚚" : "🛒";
+                html += "<div class='item' data-status='" + String(inventory[i].consumables[j].status) + "' data-trailer='" + String(inventory[i].consumables[j].livesInTrailer ? "1" : "0") + "'>";
+                html += "<span class='item-name'>" + trailerIcon + " " + inventory[i].consumables[j].name + "</span>";
                 html += "<div class='status-btns'>";
                 html += String("<button class='status-btn ok") + (inventory[i].consumables[j].status <= STATUS_OK ? " active" : "") + "' onclick='setStatus(" + String(i) + "," + String(j) + "," + String(STATUS_OK) + ")'>OK</button>";
                 html += String("<button class='status-btn low") + (inventory[i].consumables[j].status == STATUS_LOW ? " active" : "") + "' onclick='setStatus(" + String(i) + "," + String(j) + "," + String(STATUS_LOW) + ")'>Low</button>";
@@ -1022,8 +1167,11 @@ void handleTabContent() {
                 if (inventory[i].consumables[j].status == STATUS_LOW || inventory[i].consumables[j].status == STATUS_OUT) {
                     String statusClass = (inventory[i].consumables[j].status == STATUS_LOW) ? "low" : "out";
                     String badgeText = (inventory[i].consumables[j].status == STATUS_LOW) ? "LOW" : "OUT";
-                    shoppingItems += "<div class='shop-item " + statusClass + "' data-cat='" + String(i) + "' data-item='" + String(j) + "' data-status='" + String(inventory[i].consumables[j].status) + "'>";
+                    String trailerAttribute = inventory[i].consumables[j].livesInTrailer ? "true" : "false";
+                    shoppingItems += "<div class='shop-item " + statusClass + "' data-cat='" + String(i) + "' data-item='" + String(j) + "' data-status='" + String(inventory[i].consumables[j].status) + "' data-trailer='" + trailerAttribute + "'>";
                     shoppingItems += "<input type='checkbox' class='shop-check' style='width:18px;height:18px;margin-right:10px;cursor:pointer'>";
+                    String trailerIcon = inventory[i].consumables[j].livesInTrailer ? "\u{1F69A}" : "\u{1F6D2}";
+                    shoppingItems += "<span style='margin-right:8px;font-size:14px'>" + trailerIcon + "</span>";
                     shoppingItems += "<div style='flex:1'>";
                     shoppingItems += "<div style='font-weight:bold;margin-bottom:2px'>" + inventory[i].consumables[j].name + "</div>";
                     shoppingItems += "<div style='font-size:13px;opacity:0.8'>" + inventory[i].name + "</div></div>";
@@ -1061,10 +1209,19 @@ void handleTabContent() {
 
         if (shoppingCount > 0) {
             html += "<div id='cat99' class='items-container expanded'>";
+            html += "<div style='margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px'>";
+            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:6px'>FILTER BY LOCATION:</div>";
+            html += "<div style='display:flex;gap:6px;flex-wrap:wrap'>";
+            html += "<button onclick='filterShoppingTrailer(\"all\")' class='active' id='shopping-filter-all' style='padding:4px 8px;background:rgba(255,255,255,0.3);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer'>All Items</button>";
+            html += "<button onclick='filterShoppingTrailer(\"trailer\")' id='shopping-filter-trailer' style='padding:4px 8px;background:rgba(255,255,255,0.1);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer'>🚚 Lives in Trailer</button>";
+            html += "<button onclick='filterShoppingTrailer(\"trip\")' id='shopping-filter-trip' style='padding:4px 8px;background:rgba(255,255,255,0.1);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer'>🛒 Buy Each Trip</button>";
+            html += "</div></div>";
             html += "<div style='margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap'>";
             html += "<button onclick=\"selectItems('all')\" style='padding:6px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select All</button>";
             html += "<button onclick=\"selectItems('out')\" style='padding:6px 12px;background:rgba(239,68,68,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select Out Only</button>";
             html += "<button onclick=\"selectItems('low')\" style='padding:6px 12px;background:rgba(245,158,11,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select Low Only</button>";
+            html += "<button onclick=\"selectItems('trailer')\" style='padding:6px 12px;background:rgba(68,202,255,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>🚚 Trailer Items</button>";
+            html += "<button onclick=\"selectItems('trip')\" style='padding:6px 12px;background:rgba(255,107,53,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>🛒 Trip Items</button>";
             html += "<button onclick=\"selectItems('none')\" style='padding:6px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Deselect All</button>";
             html += "</div>";
             html += shoppingItems + "</div>";
@@ -1224,13 +1381,25 @@ void handleInventory() {
     // Calculate summary data for each tab
     // Consumables Summary
     int okCount = 0, lowCount = 0, outCount = 0;
+    int trailerOk = 0, trailerLow = 0, trailerOut = 0;
+    int tripOk = 0, tripLow = 0, tripOut = 0;
+    
     for (size_t i = 0; i < inventory.size(); i++) {
         if (!inventory[i].isConsumable) continue;
         for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
             switch (inventory[i].consumables[j].status) {
-                case STATUS_OK: okCount++; break;
-                case STATUS_LOW: lowCount++; break;
-                case STATUS_OUT: outCount++; break;
+                case STATUS_OK: 
+                    okCount++; 
+                    if (inventory[i].consumables[j].livesInTrailer) trailerOk++; else tripOk++;
+                    break;
+                case STATUS_LOW: 
+                    lowCount++; 
+                    if (inventory[i].consumables[j].livesInTrailer) trailerLow++; else tripLow++;
+                    break;
+                case STATUS_OUT: 
+                    outCount++; 
+                    if (inventory[i].consumables[j].livesInTrailer) trailerOut++; else tripOut++;
+                    break;
             }
         }
     }
@@ -1276,11 +1445,12 @@ void handleInventory() {
     html += "<div class='main-card-left'>";
     html += "<div class='main-card-icon'>\u{1F374}</div>";
     html += "<div class='main-card-title'>Consumables</div>";
+    html += "<div style='font-size:12px;opacity:0.7;margin-top:4px'>\u{1F69A} Trailer: " + String(trailerOk + trailerLow + trailerOut) + " | \u{1F6D2} Trip: " + String(tripOk + tripLow + tripOut) + "</div>";
     html += "</div>";
     html += "<div class='main-card-right'>";
-    html += "<div class='main-card-tile ok'><div class='tile-label'>OK Stock</div><div class='tile-value'>" + String(okCount) + "</div></div>";
-    html += "<div class='main-card-tile low'><div class='tile-label'>Low Stock</div><div class='tile-value'>" + String(lowCount) + "</div></div>";
-    html += "<div class='main-card-tile out'><div class='tile-label'>Out of Stock</div><div class='tile-value'>" + String(outCount) + "</div></div>";
+    html += "<div class='main-card-tile ok'><div class='tile-label'>OK Stock</div><div class='tile-value'>" + String(okCount) + "</div><div style='font-size:10px;opacity:0.6'>\u{1F69A}" + String(trailerOk) + " \u{1F6D2}" + String(tripOk) + "</div></div>";
+    html += "<div class='main-card-tile low'><div class='tile-label'>Low Stock</div><div class='tile-value'>" + String(lowCount) + "</div><div style='font-size:10px;opacity:0.6'>\u{1F69A}" + String(trailerLow) + " \u{1F6D2}" + String(tripLow) + "</div></div>";
+    html += "<div class='main-card-tile out'><div class='tile-label'>Out of Stock</div><div class='tile-value'>" + String(outCount) + "</div><div style='font-size:10px;opacity:0.6'>\u{1F69A}" + String(trailerOut) + " \u{1F6D2}" + String(tripOut) + "</div></div>";
     html += "</div></div>";
     
     // Trailer Card
@@ -1508,11 +1678,16 @@ void handleInventory() {
     html += "if(!name)return;";
     html += "let categoryNum=prompt('Enter category number (0-' + (document.querySelectorAll('.c').length-1) + '):');";
     html += "if(categoryNum===null)return;";
-    html += "fetch('/inventory/additem?cat=' + categoryNum + '&name=' + encodeURIComponent(name) + '&subcategory=' + subcategory)";
+    html += "let livesInTrailer='';";
+    html += "if(subcategory==0){";
+    html += "livesInTrailer=confirm('Does this item live in the trailer?\\n\\nYES = Stays in trailer (🚚)\\nNO = Buy each trip (🛒)')?'true':'false';";
+    html += "}";
+    html += "fetch('/inventory/additem?cat=' + categoryNum + '&name=' + encodeURIComponent(name) + '&subcategory=' + subcategory + '&livesInTrailer=' + livesInTrailer)";
     html += ".then(r=>{if(r.ok){loadTabContent(currentTab);}else{alert('Add failed');}});}";
 
     html += "let activeFilter=-1;";
     html += "let activeEquipmentFilter=-1;";
+    html += "let activeTrailerFilter=-1;";
     html += "function filterStatus(status){";
     html += "if(activeFilter==status){activeFilter=-1;status=-1;}else{activeFilter=status;}";
     html += "for(let i=0;i<3;i++){";
@@ -1520,6 +1695,17 @@ void handleInventory() {
     html += "if(container)container.querySelectorAll('.item').forEach(item=>{";
     html += "let itemStatus=parseInt(item.getAttribute('data-status'));";
     html += "item.style.display=(status==-1||itemStatus==status)?'flex':'none';});}}";
+
+    html += "function filterTrailer(trailerStatus){";
+    html += "if(activeTrailerFilter==trailerStatus){activeTrailerFilter=-1;trailerStatus=-1;}else{activeTrailerFilter=trailerStatus;}";
+    html += "document.querySelectorAll('.items-container').forEach(container=>{";
+    html += "container.querySelectorAll('.item').forEach(item=>{";
+    html += "let itemTrailer=parseInt(item.getAttribute('data-trailer'));";
+    html += "let shouldShow=true;";
+    html += "if(trailerStatus==-1)shouldShow=true;";
+    html += "else if(trailerStatus==1)shouldShow=(itemTrailer==1);";
+    html += "else if(trailerStatus==0)shouldShow=(itemTrailer==0);";
+    html += "item.style.display=shouldShow?'flex':'none';});});}";
 
     html += "function filterEquipment(type,showCompleted){";
     html += "if(activeEquipmentFilter==type){activeEquipmentFilter=-1;type=-1;}else{activeEquipmentFilter=type;}";
@@ -1546,6 +1732,14 @@ void handleInventory() {
     html += "if(!confirm('Reset ALL consumable items to Full? This cannot be undone.'))return;";
     html += "fetch('/inventory/resetall').then(r=>r.ok?location.reload():alert('Reset failed'));}";
 
+    html += "function filterShoppingTrailer(mode){";
+    html += "document.querySelectorAll('.shop-item').forEach(item=>{";
+    html += "let trailerAttr=item.getAttribute('data-trailer');";
+    html += "let shouldShow=mode=='all'||(mode=='trailer'&&trailerAttr=='true')||(mode=='trip'&&trailerAttr=='false');";
+    html += "item.style.display=shouldShow?'flex':'none';});";
+    html += "document.querySelectorAll('[id^=\"shopping-filter-\"]').forEach(btn=>btn.style.background='rgba(255,255,255,0.1)');";
+    html += "document.getElementById('shopping-filter-'+mode).style.background='rgba(255,255,255,0.3)';}";
+
     html += "function selectItems(mode){";
     html += "let checkboxes=document.querySelectorAll('.shop-check');";
     html += "console.log('Found '+checkboxes.length+' checkboxes, mode='+mode);";
@@ -1553,13 +1747,14 @@ void handleInventory() {
     html += "let item=cb.closest('.shop-item');";
     html += "if(!item){console.log('No item found');return;}";
     html += "let status=parseInt(item.getAttribute('data-status'));";
-    html += "console.log('Item status: '+status);";
+    html += "let trailer=parseInt(item.getAttribute('data-trailer')||'0');";
+    html += "console.log('Item status: '+status+', trailer: '+trailer);";
     html += "if(mode=='all'){cb.checked=true;}";
     html += "else if(mode=='none'){cb.checked=false;}";
-    html += "else if(mode=='out'){cb.checked=(status==3);}";
-    html += "else if(mode=='low'){cb.checked=(status==2);}});}";
-
-    html += "function markRestocked(){";
+    html += "else if(mode=='out'){cb.checked=(status==2);}"; // STATUS_OUT = 2
+    html += "else if(mode=='low'){cb.checked=(status==1);}"; // STATUS_LOW = 1
+    html += "else if(mode=='trailer'){cb.checked=(trailer==1);}";
+    html += "else if(mode=='trip'){cb.checked=(trailer==0);}});}";           html += "function markRestocked(){";
     html += "let selected=[];";
     html += "document.querySelectorAll('.shop-check:checked').forEach(cb=>{";
     html += "let item=cb.closest('.shop-item');";
@@ -1620,16 +1815,26 @@ void handleInventory() {
     html += "if(data.lowCount>0)countHTML+=' + ';}";
     html += "if(data.lowCount>0)countHTML+='<span style=\"color:#f59e0b\">'+data.lowCount+' LOW</span>';";
     html += "header.innerHTML=countHTML;";
-    html += "let html='<div style=\"margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap\">';";
+    html += "let html='<div style=\"margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px\">';";
+    html += "html+='<div style=\"font-size:11px;opacity:0.7;margin-bottom:6px\">FILTER BY LOCATION:</div>';";
+    html += "html+='<div style=\"display:flex;gap:6px;flex-wrap:wrap\">';";
+    html += "html+='<button onclick=\"filterShoppingTrailer(\\'all\\')\" class=\"active\" id=\"shopping-filter-all\" style=\"padding:4px 8px;background:rgba(255,255,255,0.3);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer\">All Items</button>';";
+    html += "html+='<button onclick=\"filterShoppingTrailer(\\'trailer\\')\" id=\"shopping-filter-trailer\" style=\"padding:4px 8px;background:rgba(255,255,255,0.1);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer\">🚚 Lives in Trailer</button>';";
+    html += "html+='<button onclick=\"filterShoppingTrailer(\\'trip\\')\" id=\"shopping-filter-trip\" style=\"padding:4px 8px;background:rgba(255,255,255,0.1);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer\">🛒 Buy Each Trip</button>';";
+    html += "html+='</div></div>';";
+    html += "html+='<div style=\"margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap\">';";
     html += "html+='<button onclick=\"selectItems(\\'all\\')\" style=\"padding:6px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select All</button>';";
     html += "html+='<button onclick=\"selectItems(\\'out\\')\" style=\"padding:6px 12px;background:rgba(239,68,68,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select Out Only</button>';";
     html += "html+='<button onclick=\"selectItems(\\'low\\')\" style=\"padding:6px 12px;background:rgba(245,158,11,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select Low Only</button>';";
+    html += "html+='<button onclick=\"selectItems(\\'trailer\\')\" style=\"padding:6px 12px;background:rgba(68,202,255,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">🚚 Trailer Items</button>';";
+    html += "html+='<button onclick=\"selectItems(\\'trip\\')\" style=\"padding:6px 12px;background:rgba(255,107,53,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">🛒 Trip Items</button>';";
     html += "html+='<button onclick=\"selectItems(\\'none\\')\" style=\"padding:6px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Deselect All</button></div>';";
     html += "data.items.forEach(item=>{";
     html += "let statusClass=item.status==2?'low':'out';";
     html += "let badge=item.status==2?'LOW':'OUT';";
-    html += "html+='<div class=\"shop-item '+statusClass+'\" data-cat=\"'+item.cat+'\" data-item=\"'+item.item+'\" data-status=\"'+item.status+'\">';";
+    html += "html+='<div class=\"shop-item '+statusClass+'\" data-cat=\"'+item.cat+'\" data-item=\"'+item.item+'\" data-status=\"'+item.status+'\" data-trailer=\"'+item.livesInTrailer+'\">';";
     html += "html+='<input type=\"checkbox\" class=\"shop-check\" style=\"width:18px;height:18px;margin-right:10px;cursor:pointer\">';";
+    html += "html+='<span style=\"margin-right:8px;font-size:14px\">'+(item.livesInTrailer?'🚚':'🛒')+'</span>';";
     html += "html+='<div style=\"flex:1\"><div style=\"font-weight:bold;margin-bottom:2px\">'+item.name+'</div>';";
     html += "html+='<div style=\"font-size:13px;opacity:0.8\">'+item.category+'</div></div>';";
     html += "html+='<span class=\"badge '+statusClass+'\">'+badge+'</span></div>';});";
@@ -1680,7 +1885,7 @@ void handleInventorySet() {
         if (inventory[cat].isConsumable && item < (int)inventory[cat].consumables.size()) {
             String itemName = inventory[cat].consumables[item].name;
             String catName = inventory[cat].name;
-            inventory[cat].consumables[item].status = status;
+            inventory[cat].consumables[item].status = (ItemStatus)status;
             Serial.printf("[INVENTORY] Changed '%s' in '%s' to status %d\n", itemName.c_str(), catName.c_str(), status);
             saveInventoryToSPIFFS();  // Auto-save on every change
             server.send(200, "text/plain", "OK");
@@ -1749,6 +1954,8 @@ bool saveInventoryToSPIFFS() {
                 JsonObject item = items.add<JsonObject>();
                 item["name"] = inventory[i].consumables[j].name;
                 item["status"] = inventory[i].consumables[j].status;
+                item["livesInTrailer"] = inventory[i].consumables[j].livesInTrailer;
+                item["lastUpdated"] = inventory[i].consumables[j].lastUpdated;
             }
         } else {
             for (size_t j = 0; j < inventory[i].equipment.size(); j++) {
@@ -1757,6 +1964,8 @@ bool saveInventoryToSPIFFS() {
                 item["checked"] = inventory[i].equipment[j].checked;
                 item["packed"] = inventory[i].equipment[j].packed;
                 item["taking"] = inventory[i].equipment[j].taking;
+                item["livesInTrailer"] = inventory[i].equipment[j].livesInTrailer;
+                item["lastUpdated"] = inventory[i].equipment[j].lastUpdated;
             }
         }
     }
@@ -1869,6 +2078,9 @@ void handleInventoryRestock() {
 }
 
 void handleInventoryShopping() {
+    // Check for filter parameter: "trailer", "trip", or "all"
+    String filter = server.hasArg("filter") ? server.arg("filter") : "all";
+    
     String json = "{\"count\":0,\"lowCount\":0,\"outCount\":0,\"items\":[";
 
     int totalCount = 0;
@@ -1880,25 +2092,34 @@ void handleInventoryShopping() {
         if (!inventory[i].isConsumable) continue;
         for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
             if (inventory[i].consumables[j].status == STATUS_LOW || inventory[i].consumables[j].status == STATUS_OUT) {
-                if (!first) json += ",";
-                first = false;
+                // Apply trailer filter
+                bool includeItem = true;
+                if (filter == "trailer" && !inventory[i].consumables[j].livesInTrailer) includeItem = false;
+                else if (filter == "trip" && inventory[i].consumables[j].livesInTrailer) includeItem = false;
+                
+                if (includeItem) {
+                    if (!first) json += ",";
+                    first = false;
 
-                json += "{\"cat\":" + String(i);
-                json += ",\"item\":" + String(j);
-                json += ",\"name\":\"" + inventory[i].consumables[j].name + "\"";
-                json += ",\"category\":\"" + inventory[i].name + "\"";
-                json += ",\"status\":" + String(inventory[i].consumables[j].status) + "}";
+                    json += "{\"cat\":" + String(i);
+                    json += ",\"item\":" + String(j);
+                    json += ",\"name\":\"" + inventory[i].consumables[j].name + "\"";
+                    json += ",\"category\":\"" + inventory[i].name + "\"";
+                    json += ",\"status\":" + String(inventory[i].consumables[j].status);
+                    json += ",\"livesInTrailer\":" + String(inventory[i].consumables[j].livesInTrailer ? "true" : "false") + "}";
 
-                totalCount++;
-                if (inventory[i].consumables[j].status == STATUS_LOW) lowCount++;
-                else outCount++;
+                    totalCount++;
+                    if (inventory[i].consumables[j].status == STATUS_LOW) lowCount++;
+                    else outCount++;
+                }
             }
         }
     }
 
     json += "],\"count\":" + String(totalCount);
     json += ",\"lowCount\":" + String(lowCount);
-    json += ",\"outCount\":" + String(outCount) + "}";
+    json += ",\"outCount\":" + String(outCount);
+    json += ",\"filter\":\"" + filter + "\"}";
 
     server.send(200, "application/json", json);
 }
@@ -1992,6 +2213,252 @@ void handleInventoryDownload() {
     server.send(200, "text/plain", txt);
 }
 
+// ============ CSV EXPORT/IMPORT HANDLERS ============
+
+void handleInventoryExportCSV() {
+    String csv = "Category Type,Category,Item Name,Status,Lives in Trailer,Checked,Packed,Taking,Last Updated\n";
+    
+    for (size_t i = 0; i < inventory.size(); i++) {
+        String categoryType;
+        if (inventory[i].isConsumable) {
+            categoryType = "CONSUMABLES"; // Clear indication this goes in Consumables tab
+        } else {
+            // For equipment, show which tab it appears in
+            switch (inventory[i].subcategory) {
+                case SUBCATEGORY_TRAILER: categoryType = "TRAILER"; break;
+                case SUBCATEGORY_ESSENTIALS: categoryType = "ESSENTIALS"; break;
+                case SUBCATEGORY_OPTIONAL: categoryType = "OPTIONAL"; break;
+                default: categoryType = "UNKNOWN"; break;
+            }
+        }
+        
+        String categoryName = inventory[i].name;
+        categoryName.replace("\"", "\"\""); // Escape quotes
+        
+        // Export consumable items
+        if (inventory[i].isConsumable) {
+            for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
+                String itemName = inventory[i].consumables[j].name;
+                itemName.replace("\"", "\"\""); // Escape quotes
+                
+                csv += categoryType + ",";
+                csv += "\"" + categoryName + "\",";
+                csv += "\"" + itemName + "\",";
+                csv += getStatusName(inventory[i].consumables[j].status);
+                csv += ",";
+                csv += (inventory[i].consumables[j].livesInTrailer ? "Yes" : "No");
+                csv += ",N/A,N/A,N/A,"; // Consumables don't have checked/packed/taking
+                csv += String(inventory[i].consumables[j].lastUpdated) + "\n";
+            }
+        } else {
+            // Export equipment items
+            for (size_t j = 0; j < inventory[i].equipment.size(); j++) {
+                String itemName = inventory[i].equipment[j].name;
+                itemName.replace("\"", "\"\""); // Escape quotes
+                
+                csv += categoryType + ",";
+                csv += "\"" + categoryName + "\",";
+                csv += "\"" + itemName + "\",";
+                csv += "OK,"; // Equipment always has OK status
+                csv += (inventory[i].equipment[j].livesInTrailer ? "Yes" : "No");
+                csv += ",";
+                csv += (inventory[i].equipment[j].checked ? "Yes" : "No");
+                csv += ",";
+                csv += (inventory[i].equipment[j].packed ? "Yes" : "No");
+                csv += ",";
+                csv += (inventory[i].equipment[j].taking ? "Yes" : "No");
+                csv += ",";
+                csv += String(inventory[i].equipment[j].lastUpdated) + "\n";
+            }
+        }
+    }
+    
+    server.sendHeader("Content-Disposition", "attachment; filename=trailer-inventory.csv");
+    server.send(200, "text/csv", csv);
+}
+
+void handleInventoryImportCSV() {
+    if (!server.hasArg("csvdata")) {
+        String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Import CSV</title>";
+        html += "<meta name='viewport' content='width=device-width,initial-scale=1'>";
+        html += "<style>body{font-family:Arial;padding:20px;background:#000;color:#fff}";
+        html += ".form-group{margin:15px 0}label{display:block;margin-bottom:5px;font-weight:bold}";
+        html += "textarea{width:100%;height:400px;padding:10px;border:1px solid #444;background:#222;color:#fff;border-radius:5px}";
+        html += ".btn{padding:12px 20px;background:#4af;color:#000;border:none;border-radius:5px;cursor:pointer;font-weight:bold;margin-right:10px}";
+        html += ".btn:hover{background:#3af}.warning{background:#ff6b35;color:#fff;padding:15px;border-radius:5px;margin:15px 0}";
+        html += "</style></head><body>";
+        
+        html += "<h2>📊 Import Complete Inventory from CSV</h2>";
+        html += "<div class='warning'>⚠️ <strong>Warning:</strong> This will completely replace your current inventory with the CSV data. Make sure you have a backup!</div>";
+        
+        html += "<form method='post'>";
+        html += "<div class='form-group'>";
+        html += "<label>Paste CSV Data:</label>";
+        html += "<textarea name='csvdata' placeholder='Category Type,Category,Item Name,Status,Lives in Trailer,Checked,Packed,Taking,Last Updated&#10;TRAILER,Kitchen Equipment,Coffee Maker,OK,Yes,Yes,Yes,Yes,1728238800000&#10;ESSENTIALS,Food & Beverages,Milk,Out,No,N/A,N/A,N/A,1728238900000'></textarea>";
+        html += "</div>";
+        html += "<button type='submit' class='btn'>Import CSV Data</button>";
+        html += "<button type='button' class='btn' onclick='window.location.href=\"/inventory\"' style='background:#666'>Cancel</button>";
+        html += "</form>";
+        
+        html += "<h3>📋 CSV Format & Category Management:</h3>";
+        html += "<p>Expected columns: Category Type, Category, Item Name, Status, Lives in Trailer, Checked, Packed, Taking, Last Updated</p>";
+        html += "<h4>Category Types & Tabs:</h4>";
+        html += "<ul>";
+        html += "<li><strong>CONSUMABLES:</strong> Food/supplies that get used up - shows on Consumables tab</li>";
+        html += "<li><strong>TRAILER:</strong> Equipment permanently in trailer - shows on Trailer tab</li>";
+        html += "<li><strong>ESSENTIALS:</strong> Equipment needed every trip - shows on Essentials tab</li>";
+        html += "<li><strong>OPTIONAL:</strong> Equipment for specific trips - shows on Optional tab</li>";
+        html += "</ul>";
+        html += "<p><strong>New Categories:</strong> Use 'CONSUMABLES' for food/supplies, or TRAILER/ESSENTIALS/OPTIONAL for equipment.</p>";
+        html += "<h4>Moving Items Between Tabs:</h4>";
+        html += "<p>Consumables always show on Consumables tab regardless of Category Type.</p>";
+        html += "<p>Equipment items are assigned to tabs by Category Type:</p>";
+        html += "<ol>";
+        html += "<li>Change 'Category Type' column: TRAILER/ESSENTIALS/OPTIONAL</li>";
+        html += "<li>For UNKNOWN categories: Assign them to TRAILER, ESSENTIALS, or OPTIONAL</li>";
+        html += "<li>Consumables→Equipment: Change to equipment status, set Checked/Packed values</li>";
+        html += "<li>Equipment→Consumables: Set Checked/Packed/Taking to 'N/A', use consumable status</li>";
+        html += "<li>Import the modified CSV</li>";
+        html += "</ol>";
+        html += "<h4>Adding New Categories:</h4>";
+        html += "<p>Simply use a new Category name in the CSV - it will be created automatically!</p>";
+        html += "<p><strong>Status:</strong> Full/OK/Low/Out (consumables), OK (equipment)</p>";
+        html += "<p><strong>Boolean fields:</strong> Yes/No or N/A for not applicable</p>";
+        
+        html += "</body></html>";
+        server.send(200, "text/html", html);
+        return;
+    }
+    
+    // Process CSV data
+    String csvData = server.arg("csvdata");
+    Serial.println("[CSV] Starting import...");
+    
+    // Clear existing inventory
+    inventory.clear();
+    
+    // Parse CSV line by line
+    int lineNum = 0;
+    int startPos = 0;
+    int imported = 0;
+    
+    while (startPos < csvData.length()) {
+        int endPos = csvData.indexOf('\n', startPos);
+        if (endPos == -1) endPos = csvData.length();
+        
+        String line = csvData.substring(startPos, endPos);
+        line.trim();
+        
+        if (lineNum > 0 && line.length() > 0) { // Skip header and empty lines
+            // Parse CSV line - simple comma splitting (should handle quoted fields better in production)
+            std::vector<String> fields;
+            int fieldStart = 0;
+            bool inQuotes = false;
+            
+            for (int i = 0; i <= line.length(); i++) {
+                char c = (i < line.length()) ? line.charAt(i) : ',';
+                
+                if (c == '"') {
+                    inQuotes = !inQuotes;
+                } else if (c == ',' && !inQuotes) {
+                    String field = line.substring(fieldStart, i);
+                    field.trim();
+                    if (field.startsWith("\"") && field.endsWith("\"")) {
+                        field = field.substring(1, field.length() - 1);
+                        field.replace("\"\"", "\""); // Unescape quotes
+                    }
+                    fields.push_back(field);
+                    fieldStart = i + 1;
+                }
+            }
+            
+            if (fields.size() >= 8) {
+                String categoryTypeStr = fields[0];
+                String categoryName = fields[1];
+                String itemName = fields[2];
+                String statusStr = fields[3];
+                String livesInTrailerStr = fields[4];
+                String checkedStr = fields[5];
+                String packedStr = fields[6];
+                String takingStr = fields[7];
+                
+                // Find or create category
+                int categoryIndex = -1;
+                for (size_t i = 0; i < inventory.size(); i++) {
+                    if (inventory[i].name == categoryName) {
+                        categoryIndex = i;
+                        break;
+                    }
+                }
+                
+                if (categoryIndex == -1) {
+                    // Create new category
+                    DynamicCategory newCategory;
+                    newCategory.name = categoryName;
+                    newCategory.icon = "📦"; // Default icon
+                    
+                    // Determine if consumable and set subcategory
+                    if (categoryTypeStr == "CONSUMABLES") {
+                        newCategory.isConsumable = true;
+                        newCategory.subcategory = SUBCATEGORY_TRAILER; // Consumables always use SUBCATEGORY_TRAILER
+                    } else {
+                        newCategory.isConsumable = false; // Equipment
+                        if (categoryTypeStr == "TRAILER") newCategory.subcategory = SUBCATEGORY_TRAILER;
+                        else if (categoryTypeStr == "ESSENTIALS") newCategory.subcategory = SUBCATEGORY_ESSENTIALS;
+                        else if (categoryTypeStr == "OPTIONAL") newCategory.subcategory = SUBCATEGORY_OPTIONAL;
+                        else {
+                            // Fallback: auto-detect based on status
+                            newCategory.isConsumable = (statusStr != "OK" || checkedStr == "N/A");
+                            newCategory.subcategory = newCategory.isConsumable ? SUBCATEGORY_TRAILER : SUBCATEGORY_OPTIONAL;
+                        }
+                    }
+                    
+                    inventory.push_back(newCategory);
+                    categoryIndex = inventory.size() - 1;
+                }
+                
+                // Add item to category
+                if (inventory[categoryIndex].isConsumable) {
+                    ConsumableItem item;
+                    item.name = itemName;
+                    item.livesInTrailer = (livesInTrailerStr == "Yes");
+                    
+                    // Parse status
+                    if (statusStr == "Low") item.status = STATUS_LOW;
+                    else if (statusStr == "Out") item.status = STATUS_OUT;
+                    else item.status = STATUS_OK;
+                    
+                    item.lastUpdated = millis();
+                    inventory[categoryIndex].consumables.push_back(item);
+                } else {
+                    EquipmentItem item;
+                    item.name = itemName;
+                    item.livesInTrailer = (livesInTrailerStr == "Yes");
+                    item.checked = (checkedStr == "Yes");
+                    item.packed = (packedStr == "Yes");
+                    item.taking = (takingStr == "Yes");
+                    item.lastUpdated = millis();
+                    inventory[categoryIndex].equipment.push_back(item);
+                }
+                
+                imported++;
+            }
+        }
+        
+        lineNum++;
+        startPos = endPos + 1;
+    }
+    
+    // Save to SPIFFS
+    if (saveInventoryToSPIFFS()) {
+        Serial.printf("[CSV] Import complete: %d items imported\n", imported);
+        server.sendHeader("Location", "/inventory?imported=" + String(imported));
+        server.send(303);
+    } else {
+        server.send(500, "text/plain", "Failed to save imported data");
+    }
+}
+
 void handleInventoryAddItem() {
     if (!server.hasArg("cat") || !server.hasArg("name")) {
         server.send(400, "text/plain", "Missing parameters");
@@ -2009,8 +2476,12 @@ void handleInventoryAddItem() {
 
     if (cat >= 0 && cat < (int)inventory.size()) {
         if (inventory[cat].isConsumable) {
-            inventory[cat].consumables.push_back(ConsumableItem(name, STATUS_FULL));
-            Serial.printf("[INVENTORY] Added consumable '%s' to category %d\n", name.c_str(), cat);
+            bool livesInTrailer = false;
+            if (server.hasArg("livesInTrailer")) {
+                livesInTrailer = (server.arg("livesInTrailer") == "true");
+            }
+            inventory[cat].consumables.push_back(ConsumableItem(name, STATUS_FULL, livesInTrailer));
+            Serial.printf("[INVENTORY] Added consumable '%s' to category %d (livesInTrailer: %s)\n", name.c_str(), cat, livesInTrailer ? "true" : "false");
         } else {
             inventory[cat].equipment.push_back(EquipmentItem(name, false, false));
             Serial.printf("[INVENTORY] Added equipment '%s' to category %d\n", name.c_str(), cat);
@@ -2079,7 +2550,7 @@ void handleInventoryAddCategory() {
     }
 
     bool isConsumable = (type == "consumable");
-    uint8_t subcategory = SUBCATEGORY_NONE;
+    Subcategory subcategory = SUBCATEGORY_TRAILER;
 
     // Determine subcategory for equipment
     if (!isConsumable) {
@@ -2918,6 +3389,31 @@ void handleInventoryFactoryReset() {
     server.send(200, "text/html", html);
 }
 
+void initializeDefaultInventory() {
+    Serial.println("[INVENTORY] Initializing default inventory structure...");
+    inventory.clear();
+    
+    // Default trailer inventory - you can customize this or load from external source
+    DynamicCategory food("Food & Beverages", "🍽️", true, SUBCATEGORY_TRAILER);
+    food.consumables.push_back(ConsumableItem("Milk", STATUS_OK, false));  // Trip item
+    food.consumables.push_back(ConsumableItem("Bread", STATUS_OK, false)); // Trip item
+    food.consumables.push_back(ConsumableItem("Salt", STATUS_OK, true));   // Trailer item
+    food.consumables.push_back(ConsumableItem("Pepper", STATUS_OK, true)); // Trailer item
+    inventory.push_back(food);
+    
+    DynamicCategory cleaning("Cleaning Supplies", "🧽", true, SUBCATEGORY_TRAILER);
+    cleaning.consumables.push_back(ConsumableItem("Paper Towels", STATUS_OK, true));
+    cleaning.consumables.push_back(ConsumableItem("Dish Soap", STATUS_OK, true));
+    inventory.push_back(cleaning);
+    
+    DynamicCategory kitchen("Kitchen Equipment", "🍳", false, SUBCATEGORY_TRAILER);
+    kitchen.equipment.push_back(EquipmentItem("Coffee Maker", false, false, false));
+    kitchen.equipment.push_back(EquipmentItem("Can Opener", false, false, false));
+    inventory.push_back(kitchen);
+    
+    Serial.printf("[INVENTORY] Created default inventory with %d categories\n", inventory.size());
+}
+
 void loadInventoryFromSPIFFS() {
     if (!SPIFFS.exists("/inventory.json")) {
         Serial.println("[INVENTORY] No saved data, initializing defaults");
@@ -2950,7 +3446,8 @@ void loadInventoryFromSPIFFS() {
         String catName = categoryObj["name"];
         String catIcon = categoryObj["icon"];
         bool isConsumable = categoryObj["isConsumable"];
-        uint8_t subcategory = categoryObj["subcategory"] | SUBCATEGORY_NONE;
+        // Load subcategory with proper defaults (no migration needed after fix-tabs)
+        Subcategory subcategory = (Subcategory)(categoryObj["subcategory"] | SUBCATEGORY_TRAILER);
         
         DynamicCategory category(catName, catIcon, isConsumable, subcategory);
         JsonArray items = categoryObj["items"];
@@ -2959,7 +3456,24 @@ void loadInventoryFromSPIFFS() {
             for (JsonObject itemObj : items) {
                 String itemName = itemObj["name"];
                 uint8_t status = itemObj["status"];
-                category.consumables.push_back(ConsumableItem(itemName, status));
+                
+                // Load or calculate livesInTrailer field
+                bool livesInTrailer;
+                if (itemObj["livesInTrailer"].is<bool>()) {
+                    livesInTrailer = itemObj["livesInTrailer"];
+                } else {
+                    // Migration: Apply smart defaults for existing data
+                    livesInTrailer = shouldLiveInTrailer(itemName, catName);
+                    Serial.printf("[MIGRATION] %s/%s -> livesInTrailer: %s\n", 
+                                 catName.c_str(), itemName.c_str(), 
+                                 livesInTrailer ? "Yes" : "No");
+                }
+                
+                unsigned long lastUpdated = itemObj["lastUpdated"] | millis();
+                
+                ConsumableItem item(itemName, (ItemStatus)status, livesInTrailer);
+                item.lastUpdated = lastUpdated;
+                category.consumables.push_back(item);
             }
         } else {
             for (JsonObject itemObj : items) {
@@ -2967,7 +3481,15 @@ void loadInventoryFromSPIFFS() {
                 bool checked = itemObj["checked"];
                 bool packed = itemObj["packed"];
                 bool taking = itemObj["taking"] | true;
-                category.equipment.push_back(EquipmentItem(itemName, checked, packed, taking));
+                
+                // Load or set livesInTrailer (always true for equipment by default)
+                bool livesInTrailer = itemObj["livesInTrailer"] | true;
+                unsigned long lastUpdated = itemObj["lastUpdated"] | millis();
+                
+                EquipmentItem item(itemName, checked, packed, taking);
+                item.livesInTrailer = livesInTrailer;
+                item.lastUpdated = lastUpdated;
+                category.equipment.push_back(item);
             }
         }
         
@@ -2988,6 +3510,56 @@ void handleInventoryReload() {
     loadInventoryFromSPIFFS();
     Serial.printf("[INVENTORY] Reload complete - %d categories loaded\n", inventory.size());
     server.send(200, "text/html", "<html><body><h1>Inventory Reloaded</h1><p>Loaded " + String(inventory.size()) + " categories from saved data.</p><p><a href='/inventory'>Return to Inventory</a></p></body></html>");
+}
+
+void handleInventoryFixTabs() {
+    Serial.println("[INVENTORY] EMERGENCY FIX: Correcting tab assignments...");
+    
+    // Force correct subcategory assignments based on known category names
+    for (size_t i = 0; i < inventory.size(); i++) {
+        if (inventory[i].isConsumable) {
+            // All consumables should be SUBCATEGORY_TRAILER (shows in Consumables tab)
+            inventory[i].subcategory = SUBCATEGORY_TRAILER;
+        } else {
+            // Equipment assignments based on actual category names
+            String catName = inventory[i].name;
+            
+            if (catName == "Trailer Systems" || catName == "Kitchen Basics" || 
+                catName == "Crockery and Cutlery" || catName == "Tools and Utilities") {
+                inventory[i].subcategory = SUBCATEGORY_TRAILER; // These go in Trailer tab
+                Serial.printf("[FIX] %s -> TRAILER tab\n", catName.c_str());
+            }
+            else if (catName == "Personal Items" || catName == "Sleep and Comfort" || 
+                     catName == "Safety and Fun" || catName == "Kitchen Extras") {
+                inventory[i].subcategory = SUBCATEGORY_ESSENTIALS; // These go in Essentials tab
+                Serial.printf("[FIX] %s -> ESSENTIALS tab\n", catName.c_str());
+            }
+            else {
+                inventory[i].subcategory = SUBCATEGORY_OPTIONAL; // Everything else goes in Optional tab
+                Serial.printf("[FIX] %s -> OPTIONAL tab\n", catName.c_str());
+            }
+        }
+    }
+    
+    // Save the corrected assignments
+    if (saveInventoryToSPIFFS()) {
+        Serial.println("[FIX] Tab assignments corrected and saved!");
+        server.send(200, "text/html", 
+            "<html><body style='font-family:Arial;padding:20px;background:#000;color:#fff'>"
+            "<h1 style='color:#4af'>✅ Tab Assignments Fixed!</h1>"
+            "<p>Categories have been reassigned to correct tabs:</p>"
+            "<ul>"
+            "<li><strong>🍴 Consumables:</strong> All food/supply items</li>"
+            "<li><strong>🚚 Trailer:</strong> Trailer Systems, Kitchen Basics, Crockery, Tools</li>"
+            "<li><strong>⭐ Essentials:</strong> Personal Items, Sleep/Comfort, Safety, Kitchen Extras</li>"
+            "<li><strong>📦 Optional:</strong> Camping gear, tents, furniture, etc.</li>"
+            "</ul>"
+            "<p><a href='/inventory' style='color:#4af'>Return to Inventory</a></p>"
+            "</body></html>");
+    } else {
+        Serial.println("[FIX] Error saving corrected assignments!");
+        server.send(500, "text/plain", "Error saving corrections");
+    }
 }
 
 void handleInventoryClearAll() {
@@ -3218,6 +3790,12 @@ void setup() {
         loadInventoryFromSPIFFS();
     }
 
+    // PWA support endpoints
+    server.on("/manifest.json", handleManifest);
+    server.on("/sw.js", handleServiceWorker);
+    server.on("/icon-192.png", handleIcon192);
+    server.on("/icon-512.png", handleIcon512);
+
     // Setup web server routes
     server.on("/", handleRoot);
     server.on("/test", handleTest);
@@ -3235,6 +3813,9 @@ void setup() {
     server.on("/inventory/resetall", handleInventoryResetAll);
     server.on("/inventory/restock", handleInventoryRestock);
     server.on("/inventory/download", handleInventoryDownload);
+    server.on("/inventory/export-csv", handleInventoryExportCSV);
+    server.on("/inventory/import-csv", HTTP_GET, handleInventoryImportCSV);
+    server.on("/inventory/import-csv", HTTP_POST, handleInventoryImportCSV);
     server.on("/inventory/add", handleInventoryAddItem);
     server.on("/inventory/add-category", handleInventoryAddCategory);
     server.on("/inventory/remove", handleInventoryRemoveItem);
@@ -3249,6 +3830,7 @@ void setup() {
     server.on("/inventory/factory-reset", handleInventoryFactoryReset);
     server.on("/inventory-factory-reset", handleInventoryFactoryReset);  // Alternative URL with dash
     server.on("/inventory/reload", handleInventoryReload);
+    server.on("/inventory/fix-tabs", handleInventoryFixTabs); // Emergency fix for tab assignments
     server.on("/inventory/edit", handleInventoryRenameItem);  // Alias for edit
     server.on("/inventory/clearall", handleInventoryClearAll);
     server.on("/inventory/rename", handleInventoryRenameItem);  // Item rename
