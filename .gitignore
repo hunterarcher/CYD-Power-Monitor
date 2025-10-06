@@ -1,0 +1,37 @@
+# PlatformIO
+.pio/
+.vscode/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+
+# Build artifacts
+*.bin
+*.hex
+*.elf
+*.map
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Credentials (keep private!)
+**/credentials.h
+**/secrets.h
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Keep documentation
+!*.md
+!README.md
+.claude/

@@ -1,0 +1,181 @@
+esphome:
+  name: trailer-monitor
+  friendly_name: Trailer Victron Monitor
+  min_version: 2025.2.0
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# ---------- Networking ----------
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Trailer-Monitor-Setup"
+    password: "trailer123"
+
+captive_portal:
+
+# Optional OTA & web UI for debugging/updates
+api: {}
+ota:
+  - platform: esphome
+    password: "TrailerMonitor2025"
+
+web_server:
+  port: 80
+
+# ---------- MQTT (optional - commented out for standalone) ----------
+# mqtt:
+#   broker: !secret mqtt_host
+#   username: !secret mqtt_user
+#   password: !secret mqtt_pass
+#   discovery: false
+#   topic_prefix: trailer/victron
+
+# ---------- Logging ----------
+logger:
+  level: INFO
+
+# ---------- BLE tracker ----------
+esp32_ble_tracker:
+  scan_parameters:
+    active: false         # passive scan is enough for adverts
+    interval: 320ms
+    window: 30ms
+
+# ---------- External components ----------
+external_components:
+  - source: github://Fabian-Schmidt/esphome-victron_ble
+
+# ---------- Victron BLE devices ----------
+victron_ble:
+  - id: shunt_device
+    mac_address: !secret shunt_mac
+    bindkey: !secret shunt_bindkey
+  - id: solar_device
+    mac_address: !secret solar_mac
+    bindkey: !secret solar_bindkey
+  # AC Charger (uncomment when detected)
+  # - id: ac_charger_device
+  #   mac_address: !secret ac_charger_mac
+  #   bindkey: !secret ac_charger_bindkey
+
+# ---------- Status LED ----------
+status_led:
+  pin:
+    number: GPIO2
+    inverted: true
+
+# ---------- Sensors ----------
+sensor:
+  # SHUNT/Battery Monitor sensors
+  - platform: victron_ble
+    victron_ble_id: shunt_device
+    type: BATTERY_VOLTAGE
+    name: "Battery Voltage"
+    id: battery_voltage
+    accuracy_decimals: 2
+    
+  - platform: victron_ble
+    victron_ble_id: shunt_device
+    type: BATTERY_CURRENT
+    name: "Battery Current"
+    id: battery_current
+    accuracy_decimals: 2
+    
+  - platform: victron_ble
+    victron_ble_id: shunt_device
+    type: CONSUMED_AH
+    name: "Consumed Ah"
+    id: consumed_ah
+    accuracy_decimals: 1
+    
+  - platform: victron_ble
+    victron_ble_id: shunt_device
+    type: STATE_OF_CHARGE
+    name: "State of Charge"
+    id: state_of_charge
+    accuracy_decimals: 0
+    
+  - platform: victron_ble
+    victron_ble_id: shunt_device
+    type: TIME_TO_GO
+    name: "Time to Go"
+    id: time_to_go
+
+  # Solar Charger sensors
+  - platform: victron_ble
+    victron_ble_id: solar_device
+    type: BATTERY_VOLTAGE
+    name: "Solar Battery Voltage"
+    id: solar_battery_voltage
+    accuracy_decimals: 2
+    
+  - platform: victron_ble
+    victron_ble_id: solar_device
+    type: BATTERY_CURRENT
+    name: "Solar Output Current"
+    id: solar_output_current
+    accuracy_decimals: 2
+    
+  - platform: victron_ble
+    victron_ble_id: solar_device
+    type: PV_POWER
+    name: "Solar PV Power"
+    id: solar_pv_power
+    accuracy_decimals: 0
+    
+  - platform: victron_ble
+    victron_ble_id: solar_device
+    type: YIELD_TODAY
+    name: "Solar Yield Today"
+    id: solar_yield_today
+    accuracy_decimals: 0
+
+  # System sensors
+  - platform: uptime
+    name: "Uptime"
+    update_interval: 60s
+
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    update_interval: 60s
+
+# ---------- Text sensors ----------
+text_sensor:
+  - platform: victron_ble
+    victron_ble_id: solar_device
+    type: DEVICE_STATE
+    name: "Solar Charger State"
+    id: solar_state
+
+  - platform: template
+    name: "System Status"
+    id: system_status
+    update_interval: 30s
+    lambda: |-
+      return {"Running"};
+
+# ---------- Binary sensors ----------
+binary_sensor:
+  - platform: victron_ble
+    victron_ble_id: solar_device
+    type: DEVICE_STATE_LOAD_DETECT
+    name: "Solar Load Detected"
+
+# ---------- Switches ----------
+switch:
+  - platform: restart
+    name: "Restart"
+
+# ---------- Periodic status logging ----------
+interval:
+  - interval: 30s
+    then:
+      - logger.log:
+          format: "Battery: %.2fV/%.2fA (%.0f%%) | Solar: %.0fW/%.2fA | State: %s"
+          args: ['id(battery_voltage).state', 'id(battery_current).state', 'id(state_of_charge).state', 'id(solar_pv_power).state', 'id(solar_output_current).state', 'id(solar_state).state.c_str()']
+          level: INFO

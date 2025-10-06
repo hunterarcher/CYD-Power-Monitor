@@ -1,0 +1,262 @@
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEScan.h>
+#include <BLEAdvertisedDevice.h>
+
+// Configuration
+#define SCAN_TIME 5  // Scan for 5 seconds per cycle
+#define SCAN_INTERVAL 100  // Lower = more thorough but more power
+#define SCAN_WINDOW 99     // Should be <= interval
+
+// Target fridge identifiers (update with your fridge's MAC/name)
+#define FRIDGE_MAC "ff:ff:11:c6:29:50"
+#define FRIDGE_NAME_PATTERN "A1-"  // Partial match for "A1-FFFF11C62950"
+
+BLEScan* pBLEScan;
+bool fridgeFound = false;
+unsigned long lastSeen = 0;
+int scanCount = 0;
+
+// Structure to track fridge data over time
+struct FridgeBeacon {
+  String timestamp;
+  int rssi;
+  String address;
+  String name;
+  bool hasServiceData;
+  String serviceData;
+  bool hasManufacturerData;
+  String manufacturerData;
+};
+
+FridgeBeacon beacons[50];  // Rolling buffer
+int beaconIndex = 0;
+
+String getTimestamp() {
+  unsigned long ms = millis();
+  unsigned long seconds = ms / 1000;
+  unsigned long minutes = seconds / 60;
+  unsigned long hours = minutes / 60;
+  
+  return String(hours % 24) + ":" + 
+         String(minutes % 60) + ":" + 
+         String(seconds % 60) + "." + 
+         String(ms % 1000);
+}
+
+void logBeacon(BLEAdvertisedDevice device) {
+  FridgeBeacon& beacon = beacons[beaconIndex];
+  
+  beacon.timestamp = getTimestamp();
+  beacon.rssi = device.getRSSI();
+  beacon.address = device.getAddress().toString().c_str();
+  beacon.name = device.haveName() ? device.getName().c_str() : "(no name)";
+  beacon.hasServiceData = device.haveServiceData();
+  beacon.hasManufacturerData = device.haveManufacturerData();
+  
+  // Extract service data if present
+  if (device.haveServiceData()) {
+    std::string data = device.getServiceData();
+    beacon.serviceData = "";
+    for (int i = 0; i < data.length(); i++) {
+      char buf[3];
+      sprintf(buf, "%02X", (uint8_t)data[i]);
+      beacon.serviceData += buf;
+      if (i < data.length() - 1) beacon.serviceData += ":";
+    }
+  } else {
+    beacon.serviceData = "(none)";
+  }
+  
+  // Extract manufacturer data if present
+  if (device.haveManufacturerData()) {
+    std::string data = device.getManufacturerData();
+    beacon.manufacturerData = "";
+    for (int i = 0; i < data.length(); i++) {
+      char buf[3];
+      sprintf(buf, "%02X", (uint8_t)data[i]);
+      beacon.manufacturerData += buf;
+      if (i < data.length() - 1) beacon.manufacturerData += ":";
+    }
+  } else {
+    beacon.manufacturerData = "(none)";
+  }
+  
+  beaconIndex = (beaconIndex + 1) % 50;
+}
+
+void printBeacon(FridgeBeacon& beacon) {
+  Serial.println("─────────────────────────────────────────────────");
+  Serial.printf("Time:         %s\n", beacon.timestamp.c_str());
+  Serial.printf("RSSI:         %d dBm (Signal: %s)\n", 
+                beacon.rssi, 
+                beacon.rssi > -70 ? "EXCELLENT" : 
+                beacon.rssi > -80 ? "GOOD" : 
+                beacon.rssi > -90 ? "FAIR" : "WEAK");
+  Serial.printf("MAC:          %s\n", beacon.address.c_str());
+  Serial.printf("Name:         %s\n", beacon.name.c_str());
+  Serial.printf("Service Data: %s\n", beacon.serviceData.c_str());
+  Serial.printf("Mfg Data:     %s\n", beacon.manufacturerData.c_str());
+}
+
+class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    String address = advertisedDevice.getAddress().toString().c_str();
+    String name = advertisedDevice.haveName() ? advertisedDevice.getName().c_str() : "";
+    
+    // Check if this is our fridge
+    bool isFridge = false;
+    address.toLowerCase();
+    name.toLowerCase();
+    
+    if (address.indexOf(FRIDGE_MAC) >= 0 || name.indexOf(String(FRIDGE_NAME_PATTERN).toLowerCase()) >= 0) {
+      isFridge = true;
+      fridgeFound = true;
+      lastSeen = millis();
+      
+      Serial.println("\n╔═══════════════════════════════════════════════╗");
+      Serial.println("║          🧊 FRIDGE DETECTED 🧊                ║");
+      Serial.println("╚═══════════════════════════════════════════════╝");
+      
+      logBeacon(advertisedDevice);
+      printBeacon(beacons[(beaconIndex - 1 + 50) % 50]);
+      
+      // Show available services
+      if (advertisedDevice.haveServiceUUID()) {
+        Serial.println("\n📡 Advertised Services:");
+        BLEUUID serviceUUID = advertisedDevice.getServiceUUID();
+        Serial.printf("   → %s\n", serviceUUID.toString().c_str());
+      }
+      
+      Serial.println("─────────────────────────────────────────────────\n");
+    }
+  }
+};
+
+void printStats() {
+  Serial.println("\n╔═══════════════════════════════════════════════╗");
+  Serial.println("║            SCAN STATISTICS                    ║");
+  Serial.println("╚═══════════════════════════════════════════════╝");
+  Serial.printf("Scans completed:  %d\n", scanCount);
+  Serial.printf("Fridge status:    %s\n", fridgeFound ? "VISIBLE" : "NOT FOUND");
+  if (fridgeFound) {
+    unsigned long timeSince = (millis() - lastSeen) / 1000;
+    Serial.printf("Last seen:        %lu seconds ago\n", timeSince);
+  }
+  Serial.printf("Beacons logged:   %d\n", beaconIndex > 0 ? beaconIndex : 50);
+  Serial.println("─────────────────────────────────────────────────\n");
+}
+
+void printHelp() {
+  Serial.println("\n╔═══════════════════════════════════════════════╗");
+  Serial.println("║     FLEX FRIDGE PASSIVE BLE SNIFFER v1.0      ║");
+  Serial.println("╚═══════════════════════════════════════════════╝");
+  Serial.println("\nCommands:");
+  Serial.println("  h - Show this help");
+  Serial.println("  s - Show statistics");
+  Serial.println("  l - List last 10 fridge beacons");
+  Serial.println("  c - Clear beacon history");
+  Serial.println("  p - Pause/Resume scanning");
+  Serial.println("  r - Reset and restart");
+  Serial.println("\nMode: PASSIVE (no connection, no writes)");
+  Serial.println("Status: Monitoring for fridge advertisements...\n");
+}
+
+bool scanningPaused = false;
+
+void handleSerialCommand() {
+  if (Serial.available() > 0) {
+    char cmd = Serial.read();
+    while(Serial.available()) Serial.read(); // Clear buffer
+    
+    switch(cmd) {
+      case 'h':
+      case 'H':
+        printHelp();
+        break;
+        
+      case 's':
+      case 'S':
+        printStats();
+        break;
+        
+      case 'l':
+      case 'L':
+        Serial.println("\n📋 Last 10 Fridge Beacons:");
+        Serial.println("═══════════════════════════════════════════════");
+        for (int i = 0; i < 10; i++) {
+          int idx = (beaconIndex - 10 + i + 50) % 50;
+          if (beacons[idx].timestamp.length() > 0) {
+            Serial.printf("\n[%d] ", i + 1);
+            printBeacon(beacons[idx]);
+          }
+        }
+        break;
+        
+      case 'c':
+      case 'C':
+        beaconIndex = 0;
+        for (int i = 0; i < 50; i++) {
+          beacons[i].timestamp = "";
+        }
+        Serial.println("\n✓ Beacon history cleared");
+        break;
+        
+      case 'p':
+      case 'P':
+        scanningPaused = !scanningPaused;
+        Serial.printf("\n%s scanning\n", scanningPaused ? "⏸ PAUSED" : "▶ RESUMED");
+        break;
+        
+      case 'r':
+      case 'R':
+        Serial.println("\n🔄 Restarting...");
+        ESP.restart();
+        break;
+        
+      default:
+        Serial.println("\n❌ Unknown command. Press 'h' for help.");
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  
+  printHelp();
+  
+  Serial.println("🔧 Initializing BLE...");
+  BLEDevice::init("Fridge-Sniffer");
+  
+  pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pBLEScan->setActiveScan(true);  // Active scan to get more data
+  pBLEScan->setInterval(SCAN_INTERVAL);
+  pBLEScan->setWindow(SCAN_WINDOW);
+  
+  Serial.println("✓ BLE initialized");
+  Serial.printf("✓ Scanning for: %s or %s\n", FRIDGE_MAC, FRIDGE_NAME_PATTERN);
+  Serial.println("✓ Ready! Monitoring for fridge...\n");
+}
+
+void loop() {
+  handleSerialCommand();
+  
+  if (!scanningPaused) {
+    scanCount++;
+    Serial.printf("🔍 Scan #%d starting...\n", scanCount);
+    
+    BLEScanResults foundDevices = pBLEScan->start(SCAN_TIME, false);
+    
+    if (!fridgeFound) {
+      Serial.println("   ⚠ Fridge not detected in this scan");
+    }
+    
+    pBLEScan->clearResults();
+    
+    delay(1000);  // Brief pause between scans
+  } else {
+    delay(100);
+  }
+}

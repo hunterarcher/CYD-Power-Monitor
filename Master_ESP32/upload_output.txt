@@ -1,0 +1,104 @@
+Processing esp32dev (platform: espressif32; board: esp32dev; framework: arduino)
+--------------------------------------------------------------------------------
+idf_tools.py installation failed
+idf_tools.py installation failed
+Verbose mode can be enabled via `-v, --verbose` option
+idf_tools.py installation failed
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (54.3.21) > Espressif ESP32 Dev Module
+HARDWARE: ESP32 240MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.2.1 
+ - framework-arduinoespressif32-libs @ 5.4.0+sha.858a988d6e 
+ - tool-dfuutil-arduino @ 1.11.0 
+ - tool-esptoolpy @ 5.0.2 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 3.2.0 
+ - tool-mklittlefs-4.0.0 @ 4.0.0 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-xtensa-esp-elf @ 14.2.0+20241119
+*** WARNING: Windows Long Path Support is disabled ***
+*** Enable it for better performance: ***
+*** 1. Run as Administrator: gpedit.msc ***
+*** 2. Navigate to: Computer Configuration > Administrative Templates > System > Filesystem ***
+*** 3. Enable 'Enable Win32 long paths' ***
+*** OR run PowerShell as Admin: ***
+*** New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1 -PropertyType DWORD -Force ***
+*** Restart required after enabling ***
+*** Applied include path shortening for 282 framework paths ***
+*** Path length reduced from 32717 to ~11377 characters ***
+*** Estimated savings: 20868 characters ***
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 42 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- ArduinoJson @ 7.4.2
+|-- WebServer @ 3.2.1
+|-- WiFi @ 3.2.1
+Building in release mode
+Retrieving maximum program size .pio\build\esp32dev\firmware.elf
+Checking size .pio\build\esp32dev\firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]  13.8% (used 45120 bytes from 327680 bytes)
+Flash: [=======   ]  74.2% (used 972698 bytes from 1310720 bytes)
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Uploading .pio\build\esp32dev\firmware.bin
+Warning: DEPRECATED: 'esptool.py' is deprecated. Please use 'esptool' instead. The '.py' suffix will be removed in a future major release.
+esptool v5.0.2
+Serial port COM11:
+Connecting......
+Connected to ESP32 on COM11:
+Chip type:          ESP32-D0WD-V3 (revision v3.0)
+Features:           Wi-Fi, BT, Dual Core + LP Core, 240MHz, Vref calibration in eFuse, Coding Scheme None
+Crystal frequency:  40MHz
+MAC:                7c:87:ce:31:fe:50
+
+Uploading stub flasher...
+Running stub flasher...
+Stub flasher running.
+Changing baud rate to 460800...
+Changed.
+
+Configuring flash size...
+Auto-detected flash size: 4MB
+Flash will be erased from 0x00001000 to 0x00006fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x000fdfff...
+SHA digest in image updated.
+Compressed 23472 bytes to 15055...
+
+Exception in thread Thread-2 (run):
+Traceback (most recent call last):
+  File "C:\Users\LENOVO\.platformio\python3\Lib\threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "C:\Users\LENOVO\.platformio\python3\Lib\threading.py", line 982, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\LENOVO\.platformio\penv\Lib\site-packages\platformio\proc.py", line 48, in run
+    self.do_reading()
+  File "C:\Users\LENOVO\.platformio\penv\Lib\site-packages\platformio\proc.py", line 103, in do_reading
+    self.line_callback(line)
+  File "C:\Users\LENOVO\.platformio\penv\Lib\site-packages\platformio\platform\_run.py", line 138, in _on_stdout_line
+    self._echo_line(line, level=1)
+  File "C:\Users\LENOVO\.platformio\penv\Lib\site-packages\platformio\platform\_run.py", line 159, in _echo_line
+    click.secho(line, fg=fg, err=level > 1, nl=False)
+  File "C:\Users\LENOVO\.platformio\penv\Lib\site-packages\platformio\__main__.py", line 90, in <lambda>
+    click.secho = lambda *args, **kwargs: _safe_echo(1, *args, **kwargs)
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\.platformio\penv\Lib\site-packages\platformio\__main__.py", line 83, in _safe_echo
+    click_echo_origin[origin](*args, **kwargs)
+  File "C:\Users\LENOVO\.platformio\penv\Lib\site-packages\click\termui.py", line 634, in secho
+    return echo(message, file=file, nl=nl, err=err, color=color)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\.platformio\penv\Lib\site-packages\click\utils.py", line 318, in echo
+    file.write(out)  # type: ignore
+    ^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO\.platformio\python3\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 23-52: character maps to <undefined>

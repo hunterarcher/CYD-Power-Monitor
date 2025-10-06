@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "Victron_ESP32"
+		},
+		{
+			"path": "Master_ESP32"
+		},
+		{
+			"path": "Victron_ESP32_V2"
+		},
+		{
+			"path": "Master_ESP32_V2"
+		},
+		{
+			"path": "Fridge_ESP32"
+		},
+		{
+			"path": "EcoFlow_ESP32"
+		},
+		{
+			"path": "WiFi_Sniffer_ESP32"
+		},
+		{
+			"path": "Master_WiFi_Sniffer"
+		}
+	],
+	"settings": {}
+}

@@ -1,0 +1,1011 @@
+[VictronBLE] Initialized successfully
+VictronBLE initialized successfully!
+Starting device monitoring...
+
+[VictronBLE] Starting 10 second scan...
+[ 12772][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 8 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 2917F6AE3848, RSSI: -68 dBm, MfgLen: 1
+  [2] MAC: 306E9710BE99, RSSI: -70 dBm
+  [3] MAC: 7F18B5EC492E, RSSI: -89 dBm, MfgLen: 3, MfgID: 0x042D
+  [4] MAC: 92CA4A61D500, RSSI: -76 dBm
+  [5] MAC: C03B9839E6FE, RSSI: -84 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: C7A2C2619FC4, RSSI: -100 dBm, MfgLen: 3, MfgID: 0x02E1 <- IP22 TARGET! [Data: E1 02 10 ]
+  [7] MAC: E886015D7938, RSSI: -85 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [8] MAC: FFFF11C62950, RSSI: -76 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 19 24 6C 27 24 CC EE F9 1C D9 5E D4 77
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x2419
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: -0.164A, SOC: 100.0%
+  Checking target device: C7A2C2619FC4
+    IP22 manufacturer data length: 3
+    ✗ IP22 data too short!
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xF90F
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  -0.164 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[ 52955][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 8 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 03D25D26A91A, RSSI: -93 dBm
+  [2] MAC: 2917F6AE3848, RSSI: -83 dBm, MfgLen: 1
+  [3] MAC: 306E9710BE99, RSSI: -68 dBm
+  [4] MAC: 7F18B5EC492E, RSSI: -87 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -82 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: C7A2C2619FC4, RSSI: -94 dBm, MfgLen: 3, MfgID: 0x02E1 <- IP22 TARGET! [Data: E1 02 10 ]
+  [7] MAC: E886015D7938, RSSI: -87 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [8] MAC: FFFF11C62950, RSSI: -76 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 41 24 6C B9 64 CD F3 7B 38 06 AC 3A B8 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x2441
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: 0.000A, SOC: 100.0%
+  Checking target device: C7A2C2619FC4
+    IP22 manufacturer data length: 3
+    ✗ IP22 data too short!
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xF937
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  0.000 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[ 93136][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 03D25D26A91A, RSSI: -90 dBm
+  [2] MAC: 2917F6AE3848, RSSI: -45 dBm, MfgLen: 1
+  [3] MAC: 306E9710BE99, RSSI: -75 dBm
+  [4] MAC: 7F18B5EC492E, RSSI: -97 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -91 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -89 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -77 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 69 24 6C 9D B0 0C C2 99 D0 BD C7 82 91 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x2469
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: 0.000A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xF95F
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  0.000 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[133307][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 03D25D26A91A, RSSI: -85 dBm
+  [2] MAC: 2917F6AE3848, RSSI: -45 dBm, MfgLen: 1
+  [3] MAC: 306E9710BE99, RSSI: -65 dBm
+  [4] MAC: 7F18B5EC492E, RSSI: -97 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -91 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -86 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -76 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 91 24 6C FC EE DB 8E F7 0F EE 8D 2F 92 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x2491
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: -0.237A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xF987
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  -0.237 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[173477][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 2917F6AE3848, RSSI: -44 dBm, MfgLen: 1
+  [2] MAC: 306E9710BE99, RSSI: -87 dBm
+  [3] MAC: 35FD85B6D267, RSSI: -95 dBm
+  [4] MAC: 7F18B5EC492E, RSSI: -102 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -87 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -89 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -80 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 B9 24 6C 6E 0A 4F 2A D1 74 99 ED 1D 32 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x24B9
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: -0.238A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xF9AF
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  -0.238 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[213647][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 306E9710BE99, RSSI: -68 dBm
+  [2] MAC: 35FD85B6D267, RSSI: -93 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -43 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -98 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -96 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -86 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -93 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 E1 24 6C F0 81 6A 47 C7 82 6E B4 5B CD 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x24E1
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.51V, Current: 0.130A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xF9D8
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.51 V
+Battery Current:  0.130 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[253807][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 306E9710BE99, RSSI: -63 dBm
+  [2] MAC: 35FD85B6D267, RSSI: -94 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -43 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -97 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -87 dBm, MfgLen: 23, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -91 dBm, MfgLen: 7, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -84 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 23
+  Raw data: E1 02 10 02 83 A3 02 0A 25 6C D9 41 5A 7C 30 C7 43 B2 45 3F 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x250A
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.51V, Current: 0.000A, SOC: 0.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    ✗ Data too short: 7 bytes
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.51 V
+Battery Current:  0.000 A
+State of Charge:  0.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[293957][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 306E9710BE99, RSSI: -72 dBm
+  [2] MAC: 35FD85B6D267, RSSI: -92 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -43 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -99 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -92 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -87 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -85 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 32 25 6C EC 24 82 D9 4D D0 3F 89 51 0A 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x2532
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.51V, Current: 0.195A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFA28
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.50V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.51 V
+Battery Current:  0.195 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[334117][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 306E9710BE99, RSSI: -68 dBm
+  [2] MAC: 35FD85B6D267, RSSI: -85 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -42 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -93 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -89 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -89 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -81 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 5A 25 6C 89 DC 5F 73 EC B4 59 CC FF 20 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x255A
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.51V, Current: 0.000A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFA50
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.51 V
+Battery Current:  0.000 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[374277][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 306E9710BE99, RSSI: -77 dBm
+  [2] MAC: 35FD85B6D267, RSSI: -96 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -60 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -91 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -89 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -81 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -76 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 82 25 6C 29 46 96 F9 D6 14 6C E2 51 D2 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x2582
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.51V, Current: -0.156A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFA78
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.51 V
+Battery Current:  -0.156 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[414446][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 13C475CC8003, RSSI: -77 dBm
+  [2] MAC: 35FD85B6D267, RSSI: -93 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -68 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -90 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -89 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -82 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -77 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 AA 25 6C 86 01 F4 A7 07 03 FA A1 82 7B 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x25AA
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.51V, Current: -0.158A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFAA0
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.51 V
+Battery Current:  -0.158 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[454617][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 13C475CC8003, RSSI: -71 dBm
+  [2] MAC: 35FD85B6D267, RSSI: -84 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -58 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -90 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -89 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -82 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -78 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 D2 25 6C 8D 98 9A 64 6A 31 D8 06 46 B1 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x25D2
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.51V, Current: -0.156A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFAC8
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.51 V
+Battery Current:  -0.156 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[494787][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 9 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 111A7AD3CBDE, RSSI: -86 dBm
+  [2] MAC: 13C475CC8003, RSSI: -67 dBm
+  [3] MAC: 35FD85B6D267, RSSI: -92 dBm
+  [4] MAC: 3DA78ED0B5F7, RSSI: -59 dBm, MfgLen: 1
+  [5] MAC: 4D6A315DA178, RSSI: -74 dBm
+  [6] MAC: 7F18B5EC492E, RSSI: -91 dBm, MfgLen: 3, MfgID: 0x042D
+  [7] MAC: C03B9839E6FE, RSSI: -90 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [8] MAC: E886015D7938, RSSI: -82 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [9] MAC: FFFF11C62950, RSSI: -80 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 FA 25 6C C9 73 3C BD 71 1E BE 3F 35 0E 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x25FA
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: -0.154A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFAF1
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  -0.154 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[534959][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 111A7AD3CBDE, RSSI: -87 dBm
+  [2] MAC: 13C475CC8003, RSSI: -78 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -59 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -91 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -90 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -81 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -80 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 23 26 6C 33 CD AE 6F A0 26 AC 81 24 78 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x2623
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: -0.154A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFB19
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  -0.154 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[575130][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 111A7AD3CBDE, RSSI: -93 dBm
+  [2] MAC: 11FE3CD18F82, RSSI: -90 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -57 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -89 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -89 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -82 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -81 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 4B 26 6C 89 2C D5 89 15 18 32 B0 75 ED 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x264B
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: -0.150A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFB41
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  -0.150 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[615301][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 7 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 11FE3CD18F82, RSSI: -90 dBm
+  [2] MAC: 353B700D0A81, RSSI: -92 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -57 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -90 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -96 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: E886015D7938, RSSI: -83 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [7] MAC: FFFF11C62950, RSSI: -82 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 73 26 6C 62 D5 04 7C 7F 24 E8 82 CF E1 
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x2673
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.50V, Current: -0.154A, SOC: 100.0%
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFB69
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.48V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.50 V
+Battery Current:  -0.154 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+Time to Go:       14400 minutes
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.48 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
+
+[VictronBLE] Starting 10 second scan...
+[655472][W][BLEScan.cpp:76] handleGAPEvent(): ESP_GAP_SEARCH_INQ_CMPL_EVT
+  Found 8 BLE devices total
+
+  === All BLE Devices Found ===
+  [1] MAC: 17FE9DA366E7, RSSI: -77 dBm
+  [2] MAC: 353B700D0A81, RSSI: -86 dBm
+  [3] MAC: 3DA78ED0B5F7, RSSI: -64 dBm, MfgLen: 1
+  [4] MAC: 7F18B5EC492E, RSSI: -91 dBm, MfgLen: 3, MfgID: 0x042D
+  [5] MAC: C03B9839E6FE, RSSI: -97 dBm, MfgLen: 25, MfgID: 0x02E1 <- BMV-712
+  [6] MAC: C7A2C2619FC4, RSSI: -95 dBm, MfgLen: 3, MfgID: 0x02E1 <- IP22 TARGET! [Data: E1 02 10 ]
+  [7] MAC: E886015D7938, RSSI: -94 dBm, MfgLen: 22, MfgID: 0x02E1 <- MPPT
+  [8] MAC: FFFF11C62950, RSSI: -80 dBm, MfgLen: 8, MfgID: 0xFFFF
+  =============================
+
+  --- Processing Victron Devices ---
+  Checking target device: C03B9839E6FE
+  Victron device found, MAC: C03B9839E6FE (BMV-712)
+[VictronBLE] Found BMV-712
+  MAC: C03B9839E6FE, Data length: 25
+  Raw data: E1 02 10 02 83 A3 02 9B 26 6C A0 58 F7 90 95 C5 E5 D1 6E 2E
+    Prefix: 0x0210, Model: 0xA383, RecType: 0x02, Nonce: 0x269B
+    ✓ Key verified
+    ✓ Decrypted successfully
+  ✓ Parsed! Voltage: 13.60V, Current: 16.711A, SOC: 100.0%
+  Checking target device: C7A2C2619FC4
+    IP22 manufacturer data length: 3
+    ✗ IP22 data too short!
+  Checking target device: E886015D7938
+  Victron device found, MAC: E886015D7938 (MPPT)
+[VictronBLE] Found MPPT
+    Prefix: 0x0210, Model: 0xA060, RecType: 0x01, Nonce: 0xFB91
+    ✓ Key verified
+    ✓ Decrypted successfully
+  Battery: 13.80V, Power: 0W, Current: 0.00A
+
+========== DEVICE STATUS ==========
+
+--- BMV-712 Battery Monitor ---
+Status: ONLINE ✓
+Battery Voltage:  13.60 V
+Battery Current:  16.711 A
+State of Charge:  100.0 %
+Consumed Ah:      -0.0 Ah
+Aux Voltage:      0.00 V
+
+--- SmartSolar MPPT ---
+Status: ONLINE ✓
+Battery Voltage:  13.80 V
+Charge Current:   0.00 A
+Solar Power:      0 W
+State:            Off
+Yield Today:      0.00 kWh
+Error:            No Error
+
+--- Blue Smart IP22 Charger ---
+Status: OFFLINE ✗
+
+===================================
+
+Waiting 30 seconds before next scan...
