@@ -619,7 +619,7 @@ void handleFridge() {
     html += "else if(params.has('level')){checkType='bat';expectedBat=parseInt(params.get('level'));showStatus('Setting battery protection...');setTimeout(checkUpdate,3000);}";
     html += "</script></head><body>";
 
-    html += "<button style='padding:8px 16px;background:#444;color:#fff;border:none;border-radius:4px;cursor:pointer' onclick='refresh()'>🔄 Refresh</button><hr>";
+    html += "<button class='action-btn secondary' onclick='refresh()' style='margin-bottom:10px'>🔄 Refresh</button><hr>";
 
     // Status message
     html += "<div id='status' style='display:none;padding:12px;margin:10px 0;background:#248;color:#fff;border-radius:8px;text-align:center;font-weight:bold'></div>";
@@ -642,17 +642,17 @@ void handleFridge() {
 
     // Quick adjust buttons
     html += "<div style='display:flex;gap:8px;justify-content:center;margin:10px 0'>";
-    html += "<button onclick='adjustTemp(-5)' style='padding:8px 16px;background:#666;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer'>-5</button>";
-    html += "<button onclick='adjustTemp(-1)' style='padding:8px 16px;background:#666;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer'>-1</button>";
-    html += "<button onclick='adjustTemp(1)' style='padding:8px 16px;background:#666;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer'>+1</button>";
-    html += "<button onclick='adjustTemp(5)' style='padding:8px 16px;background:#666;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer'>+5</button>";
+    html += "<button class='action-btn secondary' onclick='adjustTemp(-5)' style='flex:1'>-5</button>";
+    html += "<button class='action-btn secondary' onclick='adjustTemp(-1)' style='flex:1'>-1</button>";
+    html += "<button class='action-btn secondary' onclick='adjustTemp(1)' style='flex:1'>+1</button>";
+    html += "<button class='action-btn secondary' onclick='adjustTemp(5)' style='flex:1'>+5</button>";
     html += "</div>";
 
     html += "<div class='slider-wrapper'>";
     html += "<input type='range' min='-20' max='20' step='1' value='" + String(leftSet) + "' class='slider' id='slider' oninput='updateTemp(this.value)'>";
     html += "<div class='temp-labels'><span>-20°C</span><span>20°C</span></div>";
     html += "</div>";
-    html += "<button style='width:90%;padding:12px;font-size:1.1em;background:#4af;color:#000;border:none;border-radius:12px;margin:15px 5%;cursor:pointer;font-weight:bold' onclick='setTemp()'>SET TEMPERATURE</button>";
+    html += "<button class='action-btn primary' onclick='setTemp()' style='width:90%;margin:15px 5%'>SET TEMPERATURE</button>";
     html += "</div>";
 
     // ECO control with SET button
@@ -664,7 +664,7 @@ void handleFridge() {
     html += "<div class='tlabel'>ECO</div>";
     html += "</div>";
     html += "</div>";
-    html += "<button style='padding:12px 40px;font-size:1.1em;background:#4af;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold' onclick='setEco()'>SET ECO</button>";
+    html += "<button class='action-btn primary' onclick='setEco()'>SET ECO</button>";
     html += "</div>";
 
     // Status
@@ -675,6 +675,12 @@ void handleFridge() {
     } else {
         html += "<p style='color:#f66;font-size:1.1em;text-align:center'>⚠ Fridge offline</p>";
     }
+
+    // Navigation buttons
+    html += "<div style='display:flex;gap:8px;margin:20px 0;padding:0 20px'>";
+    html += "<button class='action-btn primary' onclick='window.location.href=\"/\"' style='flex:1'>\u{1F3E0} Main Dashboard</button>";
+    html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"' style='flex:1'>\u{1F4C4} Inventory</button>";
+    html += "</div>";
 
     html += "</body></html>";
     server.sendHeader("Content-Type", "text/html; charset=UTF-8");
@@ -826,7 +832,7 @@ void handleTabContent() {
 
         html += "<div class='action-btns'>";
         html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(true)'>\u{1F4C1} Add Category</button>";
-        html += "<button class='action-btn secondary' onclick='window.location.href=\"/\"'>\u{1F3E0} Home</button>";
+        html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div>";
     } 
     else if (tabNum == 2) {
@@ -884,7 +890,7 @@ void handleTabContent() {
         html += "<button class='action-btn secondary' onclick='clearAllTrailer()'>\u{1F5D1} Clear All</button>";
         html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(false)'>\u{1F4C1} Add Category</button>";
         html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory/backups\"'>\u{1F4C4} Backups</button>";
-        html += "<button class='action-btn secondary' onclick='window.location.href=\"/\"'>\u{1F3E0} Home</button>";
+        html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div>";
     }
     else if (tabNum == 3) {
@@ -941,7 +947,7 @@ void handleTabContent() {
         html += "<div class='action-btns'>";
         html += "<button class='action-btn primary' onclick='clearAllEssentials()'>🔄 Clear All</button>";
         html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(false)'>\u{1F4C1} Add Category</button>";
-        html += "<button class='action-btn secondary' onclick='window.location.href=\"/\"'>\u{1F3E0} Home</button>";
+        html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div>";
     }
     else if (tabNum == 4) {
@@ -1002,7 +1008,7 @@ void handleTabContent() {
         html += "<div class='action-btns'>";
         html += "<button class='action-btn primary' onclick='clearAllOptional()'>🔄 Clear All</button>";
         html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(false)'>\u{1F4C1} Add Category</button>";
-        html += "<button class='action-btn secondary' onclick='window.location.href=\"/\"'>\u{1F3E0} Home</button>";
+        html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div>";
     }
     else if (tabNum == 5) {
@@ -1075,8 +1081,8 @@ void handleTabContent() {
         html += "<button class='action-btn secondary' onclick='copyList()'>📋 Copy List</button>";
         html += "<button class='action-btn secondary' onclick='downloadList()'>⬇️ Download</button>";
         html += "<button class='action-btn secondary' onclick='resetAll()'>🔄 Reset All to Full</button>";
-        html += "<button class='action-btn secondary' onclick='window.location.href=\"/\"'>🏠 Home</button>";
-        html += "</div>";
+        html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
+        html += "</div";
     }
     
     server.send(200, "text/html", html);
@@ -2554,6 +2560,10 @@ void handleInventoryBackups() {
     html += ".backup-card{background:linear-gradient(135deg,#1a1a1a,#111);margin:8px 0;padding:12px;border-radius:12px;border-left:3px solid #333;box-shadow:0 4px 6px rgba(0,0,0,0.3);position:relative}";
     html += ".backup-card.current{border-left-color:#10b981;box-shadow:0 4px 6px rgba(16,185,129,0.2)}";
     html += ".backup-card.auto{border-left-color:#3b82f6;box-shadow:0 4px 6px rgba(59,130,246,0.2)}";
+    html += ".backup-card.daily{border-left-color:#f59e0b;box-shadow:0 4px 6px rgba(245,158,11,0.2)}";
+    html += ".backup-card.weekly{border-left-color:#8b5cf6;box-shadow:0 4px 6px rgba(139,92,246,0.2)}";
+    html += ".backup-card.monthly{border-left-color:#06b6d4;box-shadow:0 4px 6px rgba(6,182,212,0.2)}";
+    html += ".backup-card.quarterly{border-left-color:#f97316;box-shadow:0 4px 6px rgba(249,115,22,0.2)}";
     html += ".backup-card.old{border-left-color:#6b7280;opacity:0.8}";
     html += ".backup-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}";
     html += ".backup-name{font-size:1.1em;font-weight:600;display:flex;align-items:center;gap:6px}";
@@ -2650,19 +2660,31 @@ void handleInventoryBackups() {
             info.isSpecial = true;
             
             if (backupName == "current") {
-                info.description = "Latest manual save - Your most recent saved state";
+                info.description = "💾 Latest manual save - Your most recent saved state";
                 info.cssClass = "current";
             } else if (backupName == "auto_reset") {
-                info.description = "Smart reset backup - Created before last reset";
+                info.description = "🔄 Smart reset backup - Created before last reset";
                 info.cssClass = "auto";
             } else if (backupName == "before_restore") {
-                info.description = "Pre-restore backup - Saved before last restore operation";
+                info.description = "↩️ Pre-restore backup - Saved before last restore operation";
                 info.cssClass = "auto";
+            } else if (backupName.startsWith("daily_")) {
+                info.description = "📅 Daily auto-backup - Saved automatically each day";
+                info.cssClass = "daily";
+            } else if (backupName.startsWith("weekly_")) {
+                info.description = "📊 Weekly auto-backup - Saved every Sunday";
+                info.cssClass = "weekly";
+            } else if (backupName.startsWith("monthly_")) {
+                info.description = "🗓️ Monthly auto-backup - Saved on 1st of month";
+                info.cssClass = "monthly";
+            } else if (backupName.startsWith("quarterly_")) {
+                info.description = "📈 Quarterly auto-backup - Long-term archive";
+                info.cssClass = "quarterly";
             } else if (backupName.startsWith("backup")) {
-                info.description = "Rotated backup - Automatically managed";
+                info.description = "📦 Rotated backup - Automatically managed";
                 info.cssClass = "old";
             } else {
-                info.description = "Manual backup";
+                info.description = "📝 Manual backup";
                 info.cssClass = "";
                 info.isSpecial = false;
             }
@@ -2717,10 +2739,10 @@ void handleInventoryBackups() {
     
     html += "<div class='action-card'>";
     html += "<div class='action-desc'>";
-    html += "<div class='action-title'>Factory Reset</div>";
-    html += "<div class='action-subtitle'>Wipe everything, restore original defaults</div>";
+    html += "<div class='action-title'>Smart Reset</div>";
+    html += "<div class='action-subtitle'>Refresh system while preserving customizations</div>";
     html += "</div>";
-    html += "<a href='/inventory/factory-reset' class='btn btn-danger' onclick='return confirm(\"⚠️ FACTORY RESET WARNING ⚠️\\n\\nThis will permanently delete:\\n• All current inventory data\\n• ALL backup files\\n• All customizations\\n\\nOnly original hardcoded defaults will remain.\\n\\nThis CANNOT be undone!\\n\\nProceed?\")'>🏭 Reset</a>";
+    html += "<a href='/inventory/reset' class='btn btn-secondary' onclick='return confirm(\"Smart Reset will:\\n\\n✓ Create backup first\\n✓ Preserve all customizations\\n✓ Refresh the system\\n\\nProceed?\")'>🔄 Smart Reset</a>";
     html += "</div>";
     
     html += "</div></div>";
@@ -3023,6 +3045,115 @@ void handleNotFound() {
     server.send(404, "text/plain", "Not Found");
 }
 
+// ============ SMART BACKUP SYSTEM ============
+void checkWeeklyMonthlyBackups(unsigned long currentDay);
+void smartBackupCleanup(unsigned long currentDay);
+
+void checkDailyBackup() {
+    static unsigned long lastBackupCheck = 0;
+    static unsigned long lastBackupDay = 0;
+    
+    // Check once per hour (3,600,000 ms)
+    if (millis() - lastBackupCheck < 3600000) {
+        return;
+    }
+    lastBackupCheck = millis();
+    
+    // Get current day (days since boot)
+    unsigned long currentDay = millis() / 86400000;
+    
+    // Check if we need a daily backup (once per day)
+    if (currentDay != lastBackupDay) {
+        lastBackupDay = currentDay;
+        
+        // Create timestamped daily backup
+        String backupName = "daily_" + String(currentDay);
+        createBackup(backupName);
+        Serial.printf("[AUTO-BACKUP] ✓ Daily: %s\n", backupName.c_str());
+        
+        // Check if we need weekly/monthly backups
+        checkWeeklyMonthlyBackups(currentDay);
+        
+        // Clean up old backups using smart retention
+        smartBackupCleanup(currentDay);
+    }
+}
+
+void checkWeeklyMonthlyBackups(unsigned long currentDay) {
+    // Create weekly backup every 7 days (simulating Sunday)
+    if (currentDay % 7 == 0) {
+        String weeklyName = "weekly_" + String(currentDay / 7);
+        createBackup(weeklyName);
+        Serial.printf("[AUTO-BACKUP] ✓ Weekly: %s\n", weeklyName.c_str());
+    }
+    
+    // Create monthly backup every 30 days (simulating 1st of month)
+    if (currentDay % 30 == 0) {
+        String monthlyName = "monthly_" + String(currentDay / 30);
+        createBackup(monthlyName);
+        Serial.printf("[AUTO-BACKUP] ✓ Monthly: %s\n", monthlyName.c_str());
+    }
+    
+    // Create quarterly backup every 90 days
+    if (currentDay % 90 == 0) {
+        String quarterlyName = "quarterly_" + String(currentDay / 90);
+        createBackup(quarterlyName);
+        Serial.printf("[AUTO-BACKUP] ✓ Quarterly: %s\n", quarterlyName.c_str());
+    }
+}
+
+void smartBackupCleanup(unsigned long currentDay) {
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    
+    while (file) {
+        String fileName = file.name();
+        bool shouldDelete = false;
+        
+        // Daily backups: keep last 7 days
+        if (fileName.startsWith("/backup_daily_")) {
+            unsigned long day = fileName.substring(14, fileName.indexOf(".json")).toInt();
+            if (currentDay - day > 7) {
+                shouldDelete = true;
+                Serial.printf("[CLEANUP] Daily backup expired: %s\n", fileName.c_str());
+            }
+        }
+        
+        // Weekly backups: keep last 4 weeks
+        else if (fileName.startsWith("/backup_weekly_")) {
+            unsigned long week = fileName.substring(15, fileName.indexOf(".json")).toInt();
+            if (currentDay / 7 - week > 4) {
+                shouldDelete = true;
+                Serial.printf("[CLEANUP] Weekly backup expired: %s\n", fileName.c_str());
+            }
+        }
+        
+        // Monthly backups: keep last 6 months
+        else if (fileName.startsWith("/backup_monthly_")) {
+            unsigned long month = fileName.substring(16, fileName.indexOf(".json")).toInt();
+            if (currentDay / 30 - month > 6) {
+                shouldDelete = true;
+                Serial.printf("[CLEANUP] Monthly backup expired: %s\n", fileName.c_str());
+            }
+        }
+        
+        // Quarterly backups: keep last 4 quarters
+        else if (fileName.startsWith("/backup_quarterly_")) {
+            unsigned long quarter = fileName.substring(18, fileName.indexOf(".json")).toInt();
+            if (currentDay / 90 - quarter > 4) {
+                shouldDelete = true;
+                Serial.printf("[CLEANUP] Quarterly backup expired: %s\n", fileName.c_str());
+            }
+        }
+        
+        if (shouldDelete) {
+            SPIFFS.remove(fileName);
+        }
+        
+        file = root.openNextFile();
+    }
+}
+
 // ============ SETUP ============
 void setup() {
     Serial.begin(115200);
@@ -3178,6 +3309,7 @@ void setup() {
 void loop() {
     server.handleClient();
     processMasterQueue();  // Send queued commands when Victron is ready
+    checkDailyBackup();    // Auto-backup once per day
     yield();
 }
 

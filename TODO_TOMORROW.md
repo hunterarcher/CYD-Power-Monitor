@@ -36,8 +36,8 @@
 ## 🧪 Testing & Validation
 - [ ] Test all pages on iPad in landscape mode
 - [ ] Verify full-screen mode works (or accept limitation)
-- [ ] Test fridge page quick adjust buttons (+1, +5, -1, -5)
-- [ ] **ADD**: Navigation buttons to Fridge page (Home, Inventory, etc.)
+- [x] **FIXED**: Fridge page button styling - now matches rest of interface ✓
+- [x] **FIXED**: Navigation buttons added to Fridge page ✓
 - [ ] Test inventory add/remove items
 - [ ] Test shopping list copy/download features
 - [ ] Check for any remaining mobile popup issues
