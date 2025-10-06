@@ -5,6 +5,7 @@
 #include <esp_wifi.h>
 #include <SPIFFS.h>
 #include <ArduinoJson.h>
+#include <algorithm>
 #include "VictronData.h"
 #include "DynamicInventory.h"
 
@@ -14,6 +15,9 @@ void rotateBackups();
 void cleanupOldBackups();
 String getStorageInfo();
 void handleInventoryDeleteBackup();
+void handleInventoryAddCategory();
+void handleInventoryRenameItem();
+void handleInventoryMoveItem();
 String createStyledConfirmationPage(String title, String icon, String message, String buttonText, String buttonUrl, String buttonColor = "primary");
 
 // ============ CONFIGURATION ============
@@ -892,7 +896,7 @@ void handleInventory() {
                 html += getStatusName(s);
                 html += "</button>";
             }
-            html += "<button class='status-btn' style='background:#ef4444;margin-left:8px' onclick='removeItem(" + String(i) + "," + String(j) + ")' title='Delete item'>\u{2715}</button>";
+            html += "<button class='status-btn' style='background:#3b82f6;margin-left:8px' onclick='showEditItemMenu(" + String(i) + "," + String(j) + ")' title='Edit item'>\u{270F}</button>";
             html += "</div></div>";
         }
         html += "<button class='action-btn secondary' style='margin-top:10px;width:100%' onclick='addItem(" + String(i) + ")'>\u{2795} Add Item</button>";
@@ -901,40 +905,54 @@ void handleInventory() {
 
     html += "<div class='action-btns'>";
     html += "<button class='action-btn primary' onclick='saveInventory()'>\u{1F4BE} Save</button>";
+    html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(true)'>\u{1F4C1} Add Category</button>";
     html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory/backups\"'>\u{1F4C4} Backups</button>";
     html += "<button class='action-btn secondary' onclick='window.location.href=\"/\"'>\u{1F3E0} Home</button>";
     html += "</div></div>";
 
     // Equipment Tab
     html += "<div class='content' id='tab1'>";
+
+    // Equipment summary stats
+    int checkedCount = 0, packedCount = 0, notCheckedCount = 0, notPackedCount = 0, totalEquipment = 0;
     for (size_t i = 0; i < inventory.size(); i++) {
         if (inventory[i].isConsumable) continue;
-
-        html += "<div class='c'>";
-        html += "<div class='cat-header' onclick='toggleCat(" + String(i) + ")'>";
-        html += "<div class='cat-title'>" + inventory[i].icon + " " + inventory[i].name;
-        html += "<span class='cat-count'>" + String(inventory[i].itemCount()) + " items</span></div>";
-        html += "<span class='expand-icon'>\u{25BC}</span></div>";
-
-        html += "<div id='cat" + String(i) + "' class='items-container'>";
         for (size_t j = 0; j < inventory[i].equipment.size(); j++) {
-            html += "<div class='item'><span class='item-name'>" + inventory[i].equipment[j].name + "</span>";
-            html += "<div style='display:flex;gap:8px;align-items:center'>";
-            html += "<div class='checkbox-group'>";
-            html += "<label class='checkbox-label'><input type='checkbox' " + String(inventory[i].equipment[j].checked ? "checked" : "") + " onclick='setCheck(" + String(i) + "," + String(j) + ",0,this.checked)'>\u{2713} Checked</label>";
-            html += "<label class='checkbox-label'><input type='checkbox' " + String(inventory[i].equipment[j].packed ? "checked" : "") + " onclick='setCheck(" + String(i) + "," + String(j) + ",1,this.checked)'>\u{1F4E6} Packed</label>";
-            html += "</div>";
-            html += "<button class='status-btn' style='background:#ef4444;padding:4px 8px' onclick='removeItem(" + String(i) + "," + String(j) + ")' title='Delete item'>\u{2715}</button>";
-            html += "</div></div>";
+            totalEquipment++;
+            if (inventory[i].equipment[j].checked) checkedCount++;
+            else notCheckedCount++;
+            if (inventory[i].equipment[j].packed) packedCount++;
+            else notPackedCount++;
         }
-        html += "<button class='action-btn secondary' style='margin-top:10px;width:100%' onclick='addItem(" + String(i) + ")'>\u{2795} Add Item</button>";
-        html += "</div></div>";
     }
 
+    html += "<div class='summary'>";
+    html += "<div class='summary-card'><div class='label'>Checked</div><div class='value' style='color:#10b981'>" + String(checkedCount) + "</div></div>";
+    html += "<div class='summary-card'><div class='label'>NOT Checked</div><div class='value' style='color:#f59e0b'>" + String(notCheckedCount) + "</div></div>";
+    html += "<div class='summary-card'><div class='label'>NOT Packed</div><div class='value' style='color:#ef4444'>" + String(notPackedCount) + "</div></div>";
+    html += "</div>";
+
+    // Compact equipment display - single list
+    html += "<div class='c'>";
+    html += "<div class='cat-header'><div class='cat-title'>� All Equipment</div></div>";
+    html += "<div class='items-container expanded'>";
+
+    // Simple flat equipment list
+    for (size_t i = 0; i < inventory.size(); i++) {
+        if (inventory[i].isConsumable) continue;
+        
+        html += "<h4>" + inventory[i].icon + " " + inventory[i].name + "</h4>";
+        for (size_t j = 0; j < inventory[i].equipment.size(); j++) {
+            html += "<div class='item'>" + inventory[i].equipment[j].name;
+            html += " <input type='checkbox' " + String(inventory[i].equipment[j].checked ? "checked" : "") + " onclick='setCheck(" + String(i) + "," + String(j) + ",0,this.checked)'>✓";
+            html += " <input type='checkbox' " + String(inventory[i].equipment[j].packed ? "checked" : "") + " onclick='setCheck(" + String(i) + "," + String(j) + ",1,this.checked)'>📦</div>";
+        }
+    }
+    html += "</div></div>";
+
     html += "<div class='action-btns'>";
-    html += "<button class='action-btn primary' onclick='saveInventory()'>\u{1F4BE} Save</button>";
-    html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory/backups\"'>\u{1F4C4} Backups</button>";
-    html += "<button class='action-btn secondary' onclick='window.location.href=\"/\"'>\u{1F3E0} Home</button>";
+    html += "<button class='action-btn primary' onclick='saveInventory()'>💾 Save</button>";
+    html += "<button class='action-btn secondary' onclick='window.location.href=\"/\"'>🏠 Home</button>";
     html += "</div></div>";
 
     // Shopping List Tab
@@ -1000,15 +1018,12 @@ void handleInventory() {
 
     html += "</div>";
 
-    if (shoppingCount > 0) {
-        html += "<div class='action-btns'>";
-        html += "<button class='action-btn primary' onclick='markRestocked()' style='flex:none;width:100%'>\u{2705} Mark Selected as Restocked</button>";
-        html += "</div>";
-    }
     html += "<div class='action-btns'>";
-    html += "<button class='action-btn primary' onclick='copyList()'>\u{1F4CB} Copy List</button>";
-    html += "<button class='action-btn secondary' onclick='downloadList()'>\u{1F4BE} Download</button>";
-    html += "<button class='action-btn secondary' onclick='resetAll()'>\u{1F504} Reset All to Full</button>";
+    if (shoppingCount > 0) {
+        html += "<button class='action-btn primary' onclick='markRestocked()'>✅ Mark Selected as Restocked</button>";
+    }
+    html += "<button class='action-btn secondary' onclick='copyList()'>📋 Copy List</button>";
+    html += "<button class='action-btn secondary' onclick='resetAll()'>🔄 Reset All to Full</button>";
     html += "</div></div>";
 
     // JavaScript
@@ -1140,6 +1155,31 @@ void handleInventory() {
     html += "html+='<span class=\"badge '+statusClass+'\">'+badge+'</span></div>';});";
     html += "container.innerHTML=html;container.classList.add('expanded');}});}";
 
+    // Add Category Dialog Functions
+    html += "function showAddCategoryDialog(isConsumable){";
+    html += "let type=isConsumable?'consumable':'equipment';";
+    html += "let typeLabel=isConsumable?'Consumable':'Equipment';";
+    html += "let name=prompt('Enter '+typeLabel+' category name:');";
+    html += "if(!name||name.trim()=='')return;";
+    html += "name=name.trim();";
+    html += "let icon=prompt('Enter emoji icon (e.g., 🍝 or 🏕️):','📦');";
+    html += "if(!icon||icon.trim()=='')icon='📦';";
+    html += "icon=icon.trim();";
+    html += "if(name.length>50){alert('Category name too long (max 50 chars)');return;}";
+    html += "if(icon.length>10){alert('Icon too long (max 10 chars)');return;}";
+    html += "let url='/inventory/add-category?name='+encodeURIComponent(name)+'&type='+type+'&icon='+encodeURIComponent(icon);";
+    html += "if(!isConsumable){";
+    html += "let subcategory=prompt('Choose subcategory:\\n\\n1 = TRAILER (always packed)\\n2 = ESSENTIALS (must pack every trip)\\n3 = OPTIONAL (extra items)\\n\\nEnter 1, 2, or 3:');";
+    html += "if(subcategory=='1')subcategory='trailer';";
+    html += "else if(subcategory=='2')subcategory='essentials';";
+    html += "else if(subcategory=='3')subcategory='optional';";
+    html += "else{alert('Invalid selection. Please choose 1, 2, or 3.');return;}";
+    html += "url+='&subcategory='+subcategory;}";
+    html += "fetch(url).then(r=>{if(r.ok){alert('✅ Category \"'+name+'\" created!');location.reload();}";
+    html += "else{r.text().then(msg=>alert('❌ Error: '+msg));}});}";
+
+
+
     html += "</script></body></html>";
 
     server.send(200, "text/html", html);
@@ -1189,12 +1229,14 @@ void handleInventoryCheck() {
     int type = server.arg("type").toInt();
     int val = server.arg("val").toInt();
 
-    if (cat >= 0 && cat < (int)inventory.size() && item >= 0 && type >= 0 && type <= 1) {
+    if (cat >= 0 && cat < (int)inventory.size() && item >= 0 && type >= 0 && type <= 2) {
         if (!inventory[cat].isConsumable && item < (int)inventory[cat].equipment.size()) {
             if (type == 0) {
                 inventory[cat].equipment[item].checked = (val == 1);
-            } else {
+            } else if (type == 1) {
                 inventory[cat].equipment[item].packed = (val == 1);
+            } else if (type == 2) {
+                inventory[cat].equipment[item].taking = (val == 1);
             }
             saveInventoryToSPIFFS();  // Auto-save on every change
             server.send(200, "text/plain", "OK");
@@ -1217,25 +1259,27 @@ bool saveInventoryToSPIFFS() {
     JsonArray categories = doc.to<JsonArray>();
 
     for (size_t i = 0; i < inventory.size(); i++) {
-        JsonObject category = categories.createNestedObject();
+        JsonObject category = categories.add<JsonObject>();
         category["name"] = inventory[i].name;
         category["icon"] = inventory[i].icon;
         category["isConsumable"] = inventory[i].isConsumable;
+        category["subcategory"] = inventory[i].subcategory;
         
-        JsonArray items = category.createNestedArray("items");
+        JsonArray items = category["items"].to<JsonArray>();
         
         if (inventory[i].isConsumable) {
             for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
-                JsonObject item = items.createNestedObject();
+                JsonObject item = items.add<JsonObject>();
                 item["name"] = inventory[i].consumables[j].name;
                 item["status"] = inventory[i].consumables[j].status;
             }
         } else {
             for (size_t j = 0; j < inventory[i].equipment.size(); j++) {
-                JsonObject item = items.createNestedObject();
+                JsonObject item = items.add<JsonObject>();
                 item["name"] = inventory[i].equipment[j].name;
                 item["checked"] = inventory[i].equipment[j].checked;
                 item["packed"] = inventory[i].equipment[j].packed;
+                item["taking"] = inventory[i].equipment[j].taking;
             }
         }
     }
@@ -1490,6 +1534,185 @@ void handleInventoryRemoveItem() {
     }
 
     server.send(400, "text/plain", "Invalid parameters");
+}
+
+void handleInventoryAddCategory() {
+    if (!server.hasArg("name") || !server.hasArg("type") || !server.hasArg("icon")) {
+        server.send(400, "text/plain", "Missing parameters");
+        return;
+    }
+
+    String name = server.arg("name");
+    String type = server.arg("type");
+    String icon = server.arg("icon");
+    String subcategoryStr = server.arg("subcategory");  // Optional parameter
+    
+    name.trim();
+    icon.trim();
+
+    if (name.length() == 0 || name.length() > 50) {
+        server.send(400, "text/plain", "Invalid category name (1-50 chars)");
+        return;
+    }
+
+    if (icon.length() == 0 || icon.length() > 10) {
+        server.send(400, "text/plain", "Invalid icon");
+        return;
+    }
+
+    bool isConsumable = (type == "consumable");
+    uint8_t subcategory = SUBCATEGORY_NONE;
+
+    // Determine subcategory for equipment
+    if (!isConsumable) {
+        if (subcategoryStr == "trailer") {
+            subcategory = SUBCATEGORY_TRAILER;
+        } else if (subcategoryStr == "essentials") {
+            subcategory = SUBCATEGORY_ESSENTIALS;
+        } else if (subcategoryStr == "optional") {
+            subcategory = SUBCATEGORY_OPTIONAL;
+        }
+        // No default assignment - must be explicitly set
+    }
+
+    // Check if category name already exists
+    for (size_t i = 0; i < inventory.size(); i++) {
+        if (inventory[i].name.equalsIgnoreCase(name)) {
+            server.send(400, "text/plain", "Category name already exists");
+            return;
+        }
+    }
+
+    // Create new category
+    DynamicCategory newCategory(name, icon, isConsumable, subcategory);
+
+    // Add to inventory
+    inventory.push_back(newCategory);
+    
+    Serial.printf("[INVENTORY] Added new %s category '%s' (subcategory: %d) with icon '%s'\n", 
+                  isConsumable ? "consumable" : "equipment", name.c_str(), subcategory, icon.c_str());
+    
+    saveInventoryToSPIFFS();  // Auto-save on add
+    server.send(200, "text/plain", "OK");
+}
+
+void handleInventoryRenameItem() {
+    if (!server.hasArg("cat") || !server.hasArg("item") || !server.hasArg("name")) {
+        server.send(400, "text/plain", "Missing parameters");
+        return;
+    }
+
+    int cat = server.arg("cat").toInt();
+    int item = server.arg("item").toInt();
+    String newName = server.arg("name");
+    newName.trim();
+
+    if (newName.length() == 0 || newName.length() > 100) {
+        server.send(400, "text/plain", "Invalid item name");
+        return;
+    }
+
+    if (cat >= 0 && cat < (int)inventory.size() && item >= 0) {
+        if (inventory[cat].isConsumable && item < (int)inventory[cat].consumables.size()) {
+            String oldName = inventory[cat].consumables[item].name;
+            inventory[cat].consumables[item].name = newName;
+            Serial.printf("[INVENTORY] Renamed consumable '%s' to '%s' in category %d\n", oldName.c_str(), newName.c_str(), cat);
+            sortCategoryItems(inventory[cat]);  // Re-sort after rename
+            saveInventoryToSPIFFS();  // Auto-save on rename
+            server.send(200, "text/plain", "OK");
+            return;
+        } else if (!inventory[cat].isConsumable && item < (int)inventory[cat].equipment.size()) {
+            String oldName = inventory[cat].equipment[item].name;
+            inventory[cat].equipment[item].name = newName;
+            Serial.printf("[INVENTORY] Renamed equipment '%s' to '%s' in category %d\n", oldName.c_str(), newName.c_str(), cat);
+            sortCategoryItems(inventory[cat]);  // Re-sort after rename
+            saveInventoryToSPIFFS();  // Auto-save on rename
+            server.send(200, "text/plain", "OK");
+            return;
+        }
+    }
+
+    server.send(400, "text/plain", "Invalid parameters");
+}
+
+void handleInventoryMoveItem() {
+    if (!server.hasArg("cat") || !server.hasArg("item") || !server.hasArg("target")) {
+        server.send(400, "text/plain", "Missing parameters");
+        return;
+    }
+
+    int sourceCat = server.arg("cat").toInt();
+    int itemIndex = server.arg("item").toInt();
+    int targetCat = server.arg("target").toInt();
+
+    if (sourceCat >= 0 && sourceCat < (int)inventory.size() && 
+        targetCat >= 0 && targetCat < (int)inventory.size() && 
+        itemIndex >= 0 && sourceCat != targetCat) {
+        
+        // Check if source and target are same type (consumable vs equipment)
+        if (inventory[sourceCat].isConsumable != inventory[targetCat].isConsumable) {
+            server.send(400, "text/plain", "Cannot move between consumable and equipment categories");
+            return;
+        }
+
+        if (inventory[sourceCat].isConsumable && itemIndex < (int)inventory[sourceCat].consumables.size()) {
+            // Move consumable item
+            ConsumableItem item = inventory[sourceCat].consumables[itemIndex];
+            inventory[sourceCat].consumables.erase(inventory[sourceCat].consumables.begin() + itemIndex);
+            inventory[targetCat].consumables.push_back(item);
+            Serial.printf("[INVENTORY] Moved consumable '%s' from category %d to %d\n", item.name.c_str(), sourceCat, targetCat);
+        } else if (!inventory[sourceCat].isConsumable && itemIndex < (int)inventory[sourceCat].equipment.size()) {
+            // Move equipment item
+            EquipmentItem item = inventory[sourceCat].equipment[itemIndex];
+            inventory[sourceCat].equipment.erase(inventory[sourceCat].equipment.begin() + itemIndex);
+            inventory[targetCat].equipment.push_back(item);
+            Serial.printf("[INVENTORY] Moved equipment '%s' from category %d to %d\n", item.name.c_str(), sourceCat, targetCat);
+        } else {
+            server.send(400, "text/plain", "Invalid item index");
+            return;
+        }
+
+        // Re-sort both categories
+        sortCategoryItems(inventory[sourceCat]);
+        sortCategoryItems(inventory[targetCat]);
+        saveInventoryToSPIFFS();  // Auto-save on move
+        server.send(200, "text/plain", "OK");
+        return;
+    }
+
+    server.send(400, "text/plain", "Invalid parameters");
+}
+
+// ============ SORTING FUNCTIONS ============
+
+// Sort items alphabetically within a category (case-insensitive)
+void sortCategoryItems(DynamicCategory& category) {
+    if (category.isConsumable) {
+        std::sort(category.consumables.begin(), category.consumables.end(),
+                  [](const ConsumableItem& a, const ConsumableItem& b) {
+                      String aLower = a.name;
+                      String bLower = b.name;
+                      aLower.toLowerCase();
+                      bLower.toLowerCase();
+                      return aLower < bLower;
+                  });
+    } else {
+        std::sort(category.equipment.begin(), category.equipment.end(),
+                  [](const EquipmentItem& a, const EquipmentItem& b) {
+                      String aLower = a.name;
+                      String bLower = b.name;
+                      aLower.toLowerCase();
+                      bLower.toLowerCase();
+                      return aLower < bLower;
+                  });
+    }
+}
+
+// Sort all categories alphabetically
+void sortAllInventory() {
+    for (size_t i = 0; i < inventory.size(); i++) {
+        sortCategoryItems(inventory[i]);
+    }
 }
 
 void handleInventoryReset() {
@@ -2108,8 +2331,9 @@ void loadInventoryFromSPIFFS() {
         String catName = categoryObj["name"];
         String catIcon = categoryObj["icon"];
         bool isConsumable = categoryObj["isConsumable"];
+        uint8_t subcategory = categoryObj["subcategory"] | SUBCATEGORY_NONE;
         
-        DynamicCategory category(catName, catIcon, isConsumable);
+        DynamicCategory category(catName, catIcon, isConsumable, subcategory);
         JsonArray items = categoryObj["items"];
         
         if (isConsumable) {
@@ -2123,7 +2347,8 @@ void loadInventoryFromSPIFFS() {
                 String itemName = itemObj["name"];
                 bool checked = itemObj["checked"];
                 bool packed = itemObj["packed"];
-                category.equipment.push_back(EquipmentItem(itemName, checked, packed));
+                bool taking = itemObj["taking"] | true;
+                category.equipment.push_back(EquipmentItem(itemName, checked, packed, taking));
             }
         }
         
@@ -2233,7 +2458,10 @@ void setup() {
     server.on("/inventory/restock", handleInventoryRestock);
     server.on("/inventory/download", handleInventoryDownload);
     server.on("/inventory/add", handleInventoryAddItem);
+    server.on("/inventory/add-category", handleInventoryAddCategory);
     server.on("/inventory/remove", handleInventoryRemoveItem);
+    server.on("/inventory/rename-item", handleInventoryRenameItem);
+    server.on("/inventory/move-item", handleInventoryMoveItem);
     server.on("/inventory/reset", handleInventoryReset);
     server.on("/inventory-reset", handleInventoryReset);  // Alternative URL with dash
     server.on("/inventory/save-as-defaults", handleInventorySaveAsDefaults);
@@ -2243,6 +2471,34 @@ void setup() {
     server.on("/inventory/factory-reset", handleInventoryFactoryReset);
     server.on("/inventory-factory-reset", handleInventoryFactoryReset);  // Alternative URL with dash
     server.on("/inventory/reload", handleInventoryReload);
+    server.on("/inventory/force-new-structure", []() {
+        Serial.println("[DEBUG] Force loading new 12-category structure...");
+        inventory.clear();
+        initializeDefaultInventory();
+        saveInventoryToSPIFFS();
+        Serial.printf("[DEBUG] Loaded %d categories, saved to SPIFFS\n", inventory.size());
+        server.send(200, "text/plain", "New structure loaded! Go back to /inventory");
+    });
+    
+    // Debug endpoint to check JavaScript and memory
+    server.on("/debug/js", []() {
+        String js = "";
+        js += "function showTab(n){";
+        js += "document.querySelectorAll('.content').forEach((c,i)=>c.classList.toggle('active',i==n));";
+        js += "document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i==n));";
+        js += "if(n==2){refreshShoppingList();}}";
+        js += "\\n\\nfunction toggleCat(id){";
+        js += "let el=document.getElementById('cat'+id);";
+        js += "let hdr=el.previousElementSibling;";
+        js += "el.classList.toggle('expanded');hdr.classList.toggle('expanded');}";
+        
+        String response = "Expected JS Functions:\\n" + js + "\\n\\nFree heap: " + String(ESP.getFreeHeap()) + " bytes";
+        response += "\\nTotal heap: " + String(ESP.getHeapSize()) + " bytes";
+        response += "\\nInventory categories: " + String(inventory.size());
+        
+        server.send(200, "text/plain", response);
+    });
+    
     server.onNotFound(handleNotFound);
     server.begin();
     Serial.println("✓ Web server started\n");
