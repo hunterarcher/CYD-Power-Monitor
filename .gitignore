@@ -11,27 +11,96 @@
 *.hex
 *.elf
 *.map
+build/
+dist/
 
-# IDE
+# IDE files
 .idea/
 *.swp
 *.swo
 *~
+.vscode/settings.json
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Windows reserved names that cause issues
+NUL
+nul
+CON
+con
+PRN
+prn
+AUX
+aux
+
+# Large log/dump files  
+*.log
+*.txt
+btsnoop*.log
+btsnoop*.txt
+bugreport-*.zip
+Export*.txt
+Log*.txt
+
+# Screenshots and media (keep specific ones, ignore bulk)
+Screenshot*.png
+WhatsApp*.jpeg
+*.jpeg
+*.jpg
+*.png
+# But keep specific documentation images
+!docs/*.png
+!docs/*.jpg
+!*.md
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+
+# Backup files
+*_backup_*
+*_BACKUP_*
+backup_*/
+Backup*/
+*backup/
+*.backup
+
+# Archive/temp folders
+Archive/
+Backups/
+backup/
+temp/
+tmp/
 
 # Credentials (keep private!)
 **/credentials.h
 **/secrets.h
+**/passwords.*
 
-# Temporary files
+# Temporary and scratch files
 *.tmp
 *.bak
-*.log
+*.old
+*.orig
+scratch.*
+test_*
+Test_*
 
-# Keep documentation
-!*.md
+# Large data files
+*.zip
+*.7z
+*.rar
+*.gz
+
+# Keep important documentation
 !README.md
+!*.md
+!LICENSE
+!CHANGELOG*
+
+# Claude AI conversation history
 .claude/

@@ -1211,7 +1211,28 @@ void handleTabContent() {
             }
         }
         
-        html += "<div class='c'><div class='cat-header' onclick='toggleCat(99)'>";
+        html += "<div class='c'>";
+        
+        // Add filters ABOVE the header when there are shopping items
+        if (shoppingCount > 0) {
+            html += "<div style='margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px'>";
+            html += "<div style='font-size:12px;opacity:0.8;margin-bottom:8px;font-weight:bold'>🛒 SHOPPING FILTERS:</div>";
+            html += "<div style='margin-bottom:10px'>";
+            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:6px'>📍 LOCATION:</div>";
+            html += "<div style='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px'>";
+            html += "<button onclick='applyShoppingLocationFilter(\"all\")' id='shop-loc-all' class='filter-btn active' style='background:#667eea;color:white;border:none;padding:8px 12px;margin:2px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500'>All Items</button>";
+            html += "<button onclick='applyShoppingLocationFilter(\"trailer\")' id='shop-loc-trailer' class='filter-btn' style='background:#4af;color:black;border:none;padding:8px 12px;margin:2px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500'>🚚 Lives in Trailer</button>";
+            html += "<button onclick='applyShoppingLocationFilter(\"trip\")' id='shop-loc-trip' class='filter-btn' style='background:#ff6b35;color:white;border:none;padding:8px 12px;margin:2px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500'>🛒 Buy Each Trip</button>";
+            html += "</div>";
+            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:6px'>🎯 STATUS:</div>";
+            html += "<div style='display:flex;gap:8px;flex-wrap:wrap'>";
+            html += "<button onclick='applyShoppingStatusFilter(\"all\")' id='shop-status-all' class='filter-btn active' style='background:#667eea;color:white;border:none;padding:8px 12px;margin:2px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500'>All Status</button>";
+            html += "<button onclick='applyShoppingStatusFilter(\"low\")' id='shop-status-low' class='filter-btn' style='background:#f59e0b;color:white;border:none;padding:8px 12px;margin:2px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500'>⚠️ Low Stock</button>";
+            html += "<button onclick='applyShoppingStatusFilter(\"out\")' id='shop-status-out' class='filter-btn' style='background:#ef4444;color:white;border:none;padding:8px 12px;margin:2px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500'>❌ Out of Stock</button>";
+            html += "</div></div></div>";
+        }
+        
+        html += "<div class='cat-header' onclick='toggleCat(99)'>";
         html += "<div class='cat-title'>\u{1F6D2} Items to Purchase";
         html += "<span class='cat-count' id='shop-count'>";
         if (outShopCount > 0) {
@@ -1229,25 +1250,14 @@ void handleTabContent() {
 
         if (shoppingCount > 0) {
             html += "<div id='cat99' class='items-container expanded'>";
-            html += "<div style='margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px'>";
-            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:6px'>📍 LOCATION FILTER:</div>";
-            html += "<div style='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px'>";
-            html += "<button onclick='applyShoppingLocationFilter(\"all\")' id='shop-loc-all' class='filter-btn active' style='background:#667eea;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>All Items</button>";
-            html += "<button onclick='applyShoppingLocationFilter(\"trailer\")' id='shop-loc-trailer' class='filter-btn' style='background:#4af;color:black;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>🚚 Lives in Trailer</button>";
-            html += "<button onclick='applyShoppingLocationFilter(\"trip\")' id='shop-loc-trip' class='filter-btn' style='background:#ff6b35;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>🛒 Buy Each Trip</button>";
-            html += "</div>";
-            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:6px'>🎯 STATUS FILTER:</div>";
-            html += "<div style='display:flex;gap:6px;flex-wrap:wrap'>";
-            html += "<button onclick='applyShoppingStatusFilter(\"all\")' id='shop-status-all' class='filter-btn active' style='background:#667eea;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>All Status</button>";
-            html += "<button onclick='applyShoppingStatusFilter(\"low\")' id='shop-status-low' class='filter-btn' style='background:#f59e0b;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>⚠️ Low Stock</button>";
-            html += "<button onclick='applyShoppingStatusFilter(\"out\")' id='shop-status-out' class='filter-btn' style='background:#ef4444;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>❌ Out of Stock</button>";
+            html += "<div style='margin-bottom:12px;padding:8px;background:rgba(255,255,255,0.03);border-radius:6px'>";
+            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:8px;font-weight:bold'>🎯 SELECTION ACTIONS:</div>";
+            html += "<div style='display:flex;gap:8px;flex-wrap:wrap'>";
+            html += "<button onclick=\"selectItems('all')\" style='padding:8px 14px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:500;cursor:pointer'>Select All Visible</button>";
+            html += "<button onclick=\"selectItems('out')\" style='padding:8px 14px;background:rgba(239,68,68,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:500;cursor:pointer'>Select Out Only</button>";
+            html += "<button onclick=\"selectItems('low')\" style='padding:8px 14px;background:rgba(245,158,11,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:500;cursor:pointer'>Select Low Only</button>";
+            html += "<button onclick=\"selectItems('none')\" style='padding:8px 14px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:500;cursor:pointer'>Deselect All</button>";
             html += "</div></div>";
-            html += "<div style='margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap'>";
-            html += "<button onclick=\"selectItems('all')\" style='padding:6px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select All Visible</button>";
-            html += "<button onclick=\"selectItems('out')\" style='padding:6px 12px;background:rgba(239,68,68,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select Out Only</button>";
-            html += "<button onclick=\"selectItems('low')\" style='padding:6px 12px;background:rgba(245,158,11,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select Low Only</button>";
-            html += "<button onclick=\"selectItems('none')\" style='padding:6px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Deselect All</button>";
-            html += "</div>";
             html += shoppingItems + "</div>";
         } else {
             html += "<div id='cat99' class='items-container expanded'><div class='empty'><h3>\u{2713} All stocked up!</h3><p>No items need purchasing</p></div></div>";
