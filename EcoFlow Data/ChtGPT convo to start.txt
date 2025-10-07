@@ -1,0 +1,109 @@
+
+I want to be able to reverse engineer access to my EcoFlow Delta MAx 2 just like I did with my frdige thaat is now working. We identified the connection pattersm the UUID's, the various parsing neededd and we now have accurate data coming from my fridge via BLE and I can even change settings etcv.
+
+I testedf aaccecss to my EcoFllow aned I doont need internet, or wifi and it can access ecverything via bluetooth using the app where I can see ALL thhe data and not jeuct the battery %. I did notice that when I connected the app the ESP32 that is currently pulling just % lost connection so that confirms only one BLE connection to the device at a time.
+
+We must be able to find data etc onlline to be get this working. 
+ChatGPT said:
+
+Thought for 39s
+I’m with you. We can absolutely attack the EcoFlow over BLE the same way you did the fridge—just expect stronger auth + some protobuf framing. Here’s a tight, do-now plan with the best public breadcrumbs so we’re not guessing.
+
+What’s publicly known (useful leads)
+A dev (“Rabit”) has RE’d EcoFlow’s BLE protocol V2 (for SHP2 & Delta Pro Ultra). It shows an encrypted session, an MTU bump (~500), packets with a 0x5A 0x5A header, a session-key exchange, then protobuf payloads (decoded in his repo). There’s working Python that connects, authenticates, and parses streams. This is the most useful reference for structure and the handshake shape. 
+GitHub
++1
+
+Their HA custom integration (alpha) sits on that same BLE RE; the forum thread shows logs of the key exchange and decryption, plus tips for obtaining the EcoFlow userId needed by Rabit’s tools. 
+Home Assistant Community
+
+Another repo (Delta 2 focused) shows a different angle (notes about handles/beacons and capturing app traffic with Android HCI snoop → Wireshark). Even if message format differs from your Delta Max 2, the capture workflow is perfect. 
+GitHub
+
+Android has a built-in Bluetooth HCI snoop logger—exactly what we need to correlate your in-app taps with on-air packets. 
+Android Open Source Project
+
+Constraints we must work around
+Single BLE connection: you observed the ESP32 getting kicked when the app connects—normal. We’ll alternate: (A) learn from the app, (B) disconnect app, (C) reproduce with ESP32.
+
+Authentication: Expect a short key-exchange before notifications start. Rabit’s repo derives a login key (login_key.bin) and completes an auth routine before decrypting protobufs—so not plain GATT “read a char”. 
+GitHub
+
+Model differences: Delta Max 2 isn’t the same device as Delta 2 / DPU / SHP2, but EcoFlow tends to reuse the “V2” packet framing + auth dance. We’ll confirm on-air.
+
+Step-by-step: quickest path to useful data
+Capture the app session once (golden trace)
+
+On Android: enable Developer Options → Enable Bluetooth HCI snoop log, toggle BT, then operate everything you care about in the EcoFlow app (view stats, switch AC/DC/USB, set charge current, etc.). Afterwards, pull the log and open in Wireshark. 
+Android Open Source Project
+
+If you prefer a more guided workflow, follow the short checklist in the Delta-2 RE repo (“Contributing” section). 
+GitHub
+
+Map the BLE surfaces with nRF Connect
+
+With the app CLOSED, scan the Delta Max 2, connect, and Discover All Services. Note: primary services/characteristics, properties (Notify/Indicate/Write), MTU max.
+
+The V2 approach often uses a notify stream for telemetry and a write char for commands. Compare to Rabit’s tool which listens post-auth and prints decoded fields (wattage, currents, versions, etc.). 
+GitHub
+
+Replicate the handshake using public scripts (PC)
+
+Clone Rabit’s repo and try connect.py with your machine’s BLE adapter. His code shows the sequence: generate login key, exchange session keys, then decrypt protobuf frames. Even if it doesn’t parse DM2 perfectly, it will show whether DM2 speaks the same V2 dialect (you’ll at least see the 0x5A 0x5A envelope, MTU change, and session setup). 
+GitHub
+
+The HA thread includes logs that match this handshake, which helps validate what “good” looks like. 
+Home Assistant Community
+
+Extract fields you care about
+
+Once you see decrypted protobuf(s), you’ll get named fields like watt_info.ch_watt, currents, SOC, temps, etc. Use that to build a clean signals list for your dashboard (same process you did for the fridge). 
+GitHub
+
+Port to ESP32 (NimBLE-Arduino)
+
+After we confirm service/char UUIDs + the auth dance, we’ll move it onto your ESP32:
+
+increase MTU, connect → perform key exchange → subscribe to notify → decrypt → protobuf decode → publish to your CYD / HA via UART/MQTT.
+
+We can reuse Rabit’s protobuf definitions (or re-generate from his .py files/spec) and port the decrypt/parse routines to C++ for ESP32. 
+GitHub
+
+Why this is likely to work for Delta Max 2
+EcoFlow’s ecosystem has shifted to BLE Protocol V2 with session encryption and protobuf, visible in open RE. Even though the repos target SHP2/DPU/Delta 2, the handshake, 0x5A 0x5A frames, and MTU bump are consistent—strongly suggesting DM2 follows the same template. Worst case, we adjust message IDs/field maps after a single capture. 
+GitHub
++2
+Home Assistant Community
++2
+
+Alternative (if you want something “right now” for logging)
+EcoFlow exposes an official cloud API (needs dev keys; not local/offline). You can stand up a quick poller (Node, Python, or Node-RED) if you only need data and don’t mind internet. It’s not offline and won’t fix the single-connection BLE limit, but it’s handy for a stopgap. 
+developer.ecoflow.com
++2
+npm
++2
+
+Your immediate next actions (I can work from any of these)
+Run one Android HCI snoop capture while toggling AC/DC/USB and opening the detailed status screen. Send me the .btsnoop file (or a Wireshark export of the relevant conversation). 
+Android Open Source Project
+
+In nRF Connect, with the app closed, connect to the Delta Max 2 and screenshot the services/characteristics list (handles, UUIDs, Notify/Write flags, MTU).
+
+If you’re happy to try the PC route first, grab Rabit’s repo and run util/login_key_gen.py then connect.py. Paste the console logs (sanitise IDs). 
+GitHub
+
+Once I have either (1) the snoop, or (2) the services/UUIDs + a short log from connect.py, I’ll give you:
+
+a working ESP32 NimBLE sketch tailored to your Delta Max 2 (auth + subscribe + decode), and
+
+a dead-simple MQTT publisher to push values into HA / your CYD workflow.
+
+If you hit any walls (pairing errors, “unknown SN”, etc.), that’s also visible in the HA thread and usually means we need the proper userId / login key or firmware quirks—again solvable with the capture and that repo as reference. 
+Home Assistant Community
+
+We’ve got this. Which path do you want to start with—HCI snoop capture or trying connect.py?
+
+
+
+No file chosenNo file chosen
+ChatGPT can make mistakes. Check important info. See .

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Trailer\CYD Build\EcoFlow Data\parse_ecoflow_ble.py", line 152, in <module>
+    parse_btsnoop(sys.argv[1])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Trailer\CYD Build\EcoFlow Data\parse_ecoflow_ble.py", line 19, in parse_btsnoop
+    print(f"\U0001f4e1 Parsing {filename}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4e1' in position 0: character maps to <undefined>

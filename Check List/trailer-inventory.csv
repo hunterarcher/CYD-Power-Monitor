@@ -1,0 +1,110 @@
+Category Type,Category,Item Name,Status,Lives in Trailer,Checked,Packed,Taking,Last Updated
+TRAILER,"Kitchen","Black bags",Low,Yes,N/A,N/A,N/A,2929
+TRAILER,"Kitchen","Glad wrap",Low,Yes,N/A,N/A,N/A,2929
+TRAILER,"Kitchen","Lappies",Low,Yes,N/A,N/A,N/A,2940
+TRAILER,"Kitchen","Paper Plates",Low,Yes,N/A,N/A,N/A,2940
+TRAILER,"Kitchen","Roller towel",Unknown,Yes,N/A,N/A,N/A,2950
+TRAILER,"Kitchen","Serviettes",OK,Yes,N/A,N/A,N/A,2951
+TRAILER,"Kitchen","Sponges",Low,Yes,N/A,N/A,N/A,2951
+TRAILER,"Kitchen","Sunlight",Low,Yes,N/A,N/A,N/A,2961
+TRAILER,"Kitchen","Tin foil",Unknown,Yes,N/A,N/A,N/A,2962
+TRAILER,"Kitchen","Wet wipes",OK,Yes,N/A,N/A,N/A,2972
+TRAILER,"Kitchen","Ziploc bags",OK,Yes,N/A,N/A,N/A,2972
+TRAILER,"Non-Perishables","Bouquet Garni",Unknown,Yes,N/A,N/A,N/A,2983
+TRAILER,"Non-Perishables","Coffee (instant)",OK,Yes,N/A,N/A,N/A,2984
+TRAILER,"Non-Perishables","Cooking Oil",Unknown,Yes,N/A,N/A,N/A,2994
+TRAILER,"Non-Perishables","Filter Coffee",Unknown,Yes,N/A,N/A,N/A,2995
+TRAILER,"Non-Perishables","Hot Chocolate",Unknown,Yes,N/A,N/A,N/A,3006
+TRAILER,"Non-Perishables","Lemon Juice",Unknown,No,N/A,N/A,N/A,3006
+TRAILER,"Non-Perishables","Marshmallows",Unknown,Yes,N/A,N/A,N/A,3016
+TRAILER,"Non-Perishables","Mixed herbs/Bay Leaves",Out,Yes,N/A,N/A,N/A,3017
+TRAILER,"Non-Perishables","Normal Tea",OK,Yes,N/A,N/A,N/A,3027
+TRAILER,"Non-Perishables","Peanut butter",Unknown,Yes,N/A,N/A,N/A,3028
+TRAILER,"Non-Perishables","Pepper",OK,Yes,N/A,N/A,N/A,3038
+TRAILER,"Non-Perishables","Rooibos Tea",OK,Yes,N/A,N/A,N/A,3039
+TRAILER,"Non-Perishables","Salt",OK,Yes,N/A,N/A,N/A,3049
+TRAILER,"Non-Perishables","Sugar (sachets)",OK,Yes,N/A,N/A,N/A,3049
+TRAILER,"Non-Perishables","Tomato Sauce",Unknown,Yes,N/A,N/A,N/A,3060
+TRAILER,"General","Batteries",OK,Yes,N/A,N/A,N/A,3060
+TRAILER,"General","Citronella Candles",Low,Yes,N/A,N/A,N/A,3071
+TRAILER,"General","Duct Tape",OK,Yes,N/A,N/A,N/A,3071
+TRAILER,"General","Gas Bottle",Unknown,Yes,N/A,N/A,N/A,3072
+TRAILER,"General","Gas lighter refill",Low,Yes,N/A,N/A,N/A,3082
+TRAILER,"General","Glow Sticks",Unknown,Yes,N/A,N/A,N/A,3083
+TRAILER,"General","Matches",Low,Yes,N/A,N/A,N/A,3093
+TRAILER,"General","Mystical Fire Sachets",OK,Yes,N/A,N/A,N/A,3094
+TRAILER,"General","Zip Ties",OK,Yes,N/A,N/A,N/A,3104
+ESSENTIALS,"Trailer Systems","EcoFlow",OK,Yes,Yes,Yes,Yes,3105
+ESSENTIALS,"Trailer Systems","Hose to extend tap",OK,Yes,Yes,Yes,Yes,3105
+ESSENTIALS,"Trailer Systems","Solar panel extension",OK,Yes,Yes,Yes,Yes,3105
+ESSENTIALS,"Trailer Systems","Stand for Kitchen",OK,Yes,Yes,Yes,Yes,3106
+ESSENTIALS,"Kitchen Basics","Braai bak",OK,Yes,No,No,Yes,3106
+ESSENTIALS,"Kitchen Basics","Braai Brush",OK,Yes,No,No,Yes,3106
+ESSENTIALS,"Kitchen Basics","Braai Grid - Scissor",OK,Yes,Yes,Yes,Yes,3106
+ESSENTIALS,"Kitchen Basics","Cooking Utensils",OK,Yes,Yes,Yes,Yes,3106
+ESSENTIALS,"Kitchen Basics","Fire Fan",OK,Yes,Yes,Yes,Yes,3106
+ESSENTIALS,"Kitchen Basics","Gas lighter",OK,Yes,Yes,Yes,Yes,3106
+ESSENTIALS,"Kitchen Basics","Gas stove top",OK,Yes,Yes,Yes,Yes,3107
+ESSENTIALS,"Kitchen Basics","Kettle",OK,Yes,Yes,Yes,Yes,3107
+ESSENTIALS,"Kitchen Basics","Pots and Pans",OK,Yes,Yes,Yes,Yes,3107
+ESSENTIALS,"Kitchen Basics","Skottle",OK,Yes,Yes,Yes,Yes,3107
+ESSENTIALS,"Kitchen Basics","Tongs",OK,Yes,Yes,Yes,Yes,3107
+ESSENTIALS,"Crockery and Cutlery","Bowls",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Forks",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Knives",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Metal Cups",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Mugs",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Paper Plate Holder",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Scissors",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Sharp Knives",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Spoons",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Crockery and Cutlery","Teaspoons",OK,Yes,Yes,Yes,Yes,3108
+ESSENTIALS,"Tools and Utilities","Axe",OK,Yes,Yes,Yes,Yes,3109
+ESSENTIALS,"Tools and Utilities","Dish cloths",OK,Yes,Yes,Yes,Yes,3109
+ESSENTIALS,"Tools and Utilities","Extension Cords",OK,Yes,No,No,Yes,3109
+ESSENTIALS,"Tools and Utilities","Mallet",OK,Yes,Yes,Yes,Yes,3109
+ESSENTIALS,"Tools and Utilities","Multi-adapters",OK,Yes,Yes,Yes,Yes,3109
+ESSENTIALS,"Tools and Utilities","Multitools",OK,Yes,Yes,Yes,Yes,3109
+ESSENTIALS,"Tools and Utilities","Washing bowl - collapsible",OK,Yes,Yes,Yes,Yes,3109
+OPTIONAL,"Personal Items","Clothes",OK,Yes,No,No,No,3110
+OPTIONAL,"Personal Items","Cozzies",OK,Yes,No,No,No,3110
+OPTIONAL,"Personal Items","Meds",OK,Yes,No,No,No,3110
+OPTIONAL,"Personal Items","Shoes",OK,Yes,No,No,No,3110
+OPTIONAL,"Personal Items","Sunblock",OK,Yes,No,No,No,3110
+OPTIONAL,"Personal Items","Toiletries",OK,Yes,No,No,No,3110
+OPTIONAL,"Sleep and Comfort","Beach towels",OK,Yes,No,No,No,3110
+OPTIONAL,"Sleep and Comfort","Duvet",OK,Yes,No,No,No,3110
+OPTIONAL,"Sleep and Comfort","Duvet Cover",OK,Yes,No,No,No,3110
+OPTIONAL,"Sleep and Comfort","Pillows",OK,Yes,No,No,No,3110
+OPTIONAL,"Safety and Fun","Bikes/helmets",OK,Yes,No,No,No,3112
+OPTIONAL,"Safety and Fun","Boat and ore",OK,Yes,No,No,No,3112
+OPTIONAL,"Safety and Fun","Books",OK,Yes,No,No,No,3112
+OPTIONAL,"Safety and Fun","Buckets",OK,Yes,No,No,No,3112
+OPTIONAL,"Safety and Fun","First aid",OK,Yes,No,No,No,3112
+OPTIONAL,"Safety and Fun","Life jacket",OK,Yes,No,No,No,3112
+OPTIONAL,"Safety and Fun","Meds",OK,Yes,No,No,Yes,3112
+OPTIONAL,"Safety and Fun","Toys",OK,Yes,No,No,No,3112
+OPTIONAL,"Safety and Fun","Walkie Talkies + chargers",OK,Yes,No,No,No,3112
+UNKNOWN,"Shelter and Setup","2 Man Tent + Poles",OK,Yes,No,No,No,3112
+UNKNOWN,"Shelter and Setup","4 Man tent + poles",OK,Yes,No,No,No,3113
+UNKNOWN,"Shelter and Setup","Ground sheets",OK,Yes,Yes,Yes,Yes,3113
+UNKNOWN,"Shelter and Setup","Nylon Tent + Poles",OK,Yes,No,No,No,3113
+UNKNOWN,"Shelter and Setup","Pop-up gazebo + ground sheets",OK,Yes,No,No,Yes,3113
+UNKNOWN,"Shelter and Setup","Windbreak",OK,Yes,No,No,No,3113
+UNKNOWN,"Extra Furniture","Hammock",OK,Yes,Yes,Yes,Yes,3114
+UNKNOWN,"Extra Furniture","Large foldup table",OK,Yes,No,No,Yes,3114
+UNKNOWN,"Extra Furniture","Small tables",OK,Yes,Yes,Yes,Yes,3114
+UNKNOWN,"Extra Furniture","Table + Benches",OK,Yes,No,No,Yes,3114
+UNKNOWN,"Cooking Extras","Braai Grid - Large Flat",OK,Yes,No,No,No,3114
+UNKNOWN,"Cooking Extras","Cast Iron Bread Maker",OK,Yes,Yes,Yes,Yes,3115
+UNKNOWN,"Cooking Extras","Pizza Oven + Plates",OK,Yes,No,No,No,3115
+UNKNOWN,"Cooking Extras","Potjie + accessories",OK,Yes,No,No,Yes,3115
+UNKNOWN,"Cooking Extras","Potjie Stand",OK,Yes,No,No,Yes,3115
+UNKNOWN,"Extra Lighting","Solar Jars",OK,Yes,No,No,No,3116
+UNKNOWN,"Extra Lighting","Torches",OK,Yes,No,No,No,3116
+UNKNOWN,"Gear and Storage","Backpacks",OK,Yes,No,No,No,3116
+UNKNOWN,"Gear and Storage","Cooler Box",OK,Yes,No,No,Yes,3116
+UNKNOWN,"Gear and Storage","Floaties",OK,Yes,No,No,Yes,3116
+UNKNOWN,"Gear and Storage","Games",OK,Yes,No,No,Yes,3116
+OPTIONAL,"Kitchen Extras","Coffee grinder",OK,Yes,No,No,Yes,3116
+OPTIONAL,"Kitchen Extras","Extra pot",OK,Yes,No,No,Yes,3117

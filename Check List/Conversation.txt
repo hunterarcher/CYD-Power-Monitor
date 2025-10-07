@@ -1,0 +1,465 @@
+> ok, so there are a few things I want to work on this morning. One is the ordering of the various lists. We have the categories but
+under those I want the lists to be ordered alphabetically for easier location of items in each category. Is this something you can
+force so that when we add something new it gets added into the alphabetical order or do we need a way to reorder each time? I also
+want to know if there is a way to add a new category if we wanted to more categories in consumables or Equipment. The other issue is
+the reset that is wiping out the data we have added or the details set for each item. I have had a few times, one being now where the
+lists dissapear and I can click on anyting and the rest URL works and everything comes back BUT we lose all the changes we made such
+as adding or removing items. We need to fix this so that we can reset - not sure why its happening but a refresh didnt work and a
+reset did - BUT we cannot keep losing all the customisations etc. Is there a way when we hit save that the data is also saved to the
+hardcoded file so that a rest does its thing and keeps everything as it was after the last save or restock etc? Under equipment I want
+ to add the same tiles as in consumables where we can see how many NOT checked, NOT packed which is a greaat way to quickly see what
+is still needed to be done before we leave. I want to add new categoreis here as well such as the stuff we pack each time like
+clothes, toiletries, phone chargers etc. and the tiles would allow a quick visual of what I still need to pack into the trailer.
+Another thing that would be nice but not sure how you add it in is maybe two main categories in the Equipment wiht the sub categories
+under where I can have TRAILER and then the categories under there where thingss are permanently in the trailer and then maybe
+OPPTIONAL ADDITIONAL or EXTRAS with categories under there for things that are not in the trailer and not always taken. These can have
+ checked, packed or not taking as the options so that things like say wood we can ssay not taking but aa large braai grid could be set
+ to packed. This way we still have the top tile of what still needs to be packed and anything we are not taking is excluded from that.
+ Lets start with that as that seems to be a lot to start with. Ok, one last thing, wiht the remove button next to each item could that
+ be an Edit button where we can either change the text of the item, delete it OR select another categorie to move to - a push on this
+one and we can always just delete and recreate with changed text or in the new category but a nicee to have if we can make it happen.
+Also, worst case on the default list is that we export and you upload it BUT when we are away camping the last thing I want it to lose
+ accecss and the only way to get access back is a reset but then all the data we have captured is gone.
+
+● Let me break this down into tasks to address systematically:
+
+● Let me first read the current code to understand the data structure and persistence:
+
+● Search(pattern: "**/data/**/*.{js,json,html}")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/consumables*")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/equipment*")
+  ⎿  Found 0 files
+
+● Search(pattern: "**/*.html")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Read(Check List\inventory_mockup.html)
+  ⎿  Read 749 lines (ctrl+o to expand)
+
+● Bash(ls "C:\Trailer\CYD Build\Master_ESP32\data")
+  ⎿  Error: ls: cannot access 'C:\Trailer\CYD Build\Master_ESP32\data': No such file or directory
+
+● Bash(find "C:\Trailer\CYD Build\Master_ESP32" -name "*.html" -o -name "*.js" -o -name "*.json" 2>nul | head -20)
+  ⎿  find: paths must precede expression: `2'
+
+● Search(pattern: "**/Master_ESP32/**/*.{html,js,json}")
+  ⎿  Found 0 files
+
+● Bash(ls -la "C:\Trailer\CYD Build\Master_ESP32")
+  ⎿  total 70
+     drwxr-xr-x 1 LENOVO 197613    0 Oct  3 19:03 .
+     drwxr-xr-x 1 LENOVO 197613    0 Oct  5 23:08 ..
+     … +9 lines (ctrl+o to expand)
+
+● I see - this is a static HTML mockup. Let me check the actual ESP32 implementation:
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Error: File content (28335 tokens) exceeds maximum allowed tokens (25000). Please use offset and limit parameters to read specific
+     portions of the file, or use the GrepTool to search for specific content.
+
+● Search(pattern: "inventory|consumable|equipment", path: "Master_ESP32\src\main.cpp")
+  ⎿  Found 1 file (ctrl+o to expand)
+
+● Search(pattern: "const char.*inventory.*PROGMEM|String.*inventory", path: "Master_ESP32\src\main.cpp", output_mode: "content",
+        head_limit: 10)
+  ⎿  Found 10 lines (ctrl+o to expand)
+
+● Search(pattern: "struct.*Category|class.*Category|Category.*inventory\[|inventory\[.*\].*=", path: "Master_ESP32\src\main.cpp",
+        output_mode: "content", head_limit: 20)
+  ⎿  Found 20 lines (ctrl+o to expand)
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 200 lines (ctrl+o to expand)
+
+● Search(pattern: "^struct|^class", path: "Master_ESP32\src\main.cpp", output_mode: "content")
+  ⎿  Found 1 line (ctrl+o to expand)
+
+● Read(Master_ESP32\src\DynamicInventory.h)
+  ⎿  Error reading file
+
+● Bash(ls -la "C:\Trailer\CYD Build\Master_ESP32\include")
+  ⎿  total 36
+     drwxr-xr-x 1 LENOVO 197613    0 Oct  5 19:32 .
+     drwxr-xr-x 1 LENOVO 197613    0 Oct  3 19:03 ..
+     … +3 lines (ctrl+o to expand)
+
+● Read(Master_ESP32\include\DynamicInventory.h)
+  ⎿  Read 186 lines (ctrl+o to expand)
+
+● Read(Master_ESP32\include\InventoryData.h)
+  ⎿  Read 177 lines (ctrl+o to expand)
+
+● Good! Now I can see the structure. The system uses DynamicInventory.h with vectors for dynamic storage. Let me check how data
+  persistence works:
+
+● Search(pattern: "saveInventory|loadInventory|SPIFFS|writeFile|readFile", path: "Master_ESP32\src\main.cpp", output_mode: "content",
+        head_limit: 30)
+  ⎿  Found 19 lines (ctrl+o to expand)
+
+● Perfect! Now let me check the save/load functions and the reset/restock functionality:
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 80 lines (ctrl+o to expand)
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 120 lines (ctrl+o to expand)
+
+● Perfect! Now I understand the issue. The problem is:
+
+  Problem: The handleInventoryReset() deletes the SPIFFS file and reloads defaults, but when you click "Reset" from the UI, it doesn't
+   save the current state first. So you lose all your changes.
+
+  Solution: Before resetting, we should auto-save. But the real issue is the /reload endpoint - it's reloading from SPIFFS without the
+   latest changes being saved.
+
+  Let me check the JavaScript to see what's happening:
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 60 lines (ctrl+o to expand)
+
+● Now I understand the full picture! Let me update the todo and implement the fixes:
+  ⎿  Interrupted · What should Claude do instead?
+
+> there is a reset URL we use when nothing works and that is the issue
+
+● Ah, I understand now! The /reset URL is your emergency fix when the page isn't working, but it wipes out all your customizations.
+  Let me find that reset endpoint:
+
+● Search(pattern: "server\.on.*reset|handleReset|/reset", path: "Master_ESP32\src\main.cpp", output_mode: "content")
+  ⎿  Found 3 lines (ctrl+o to expand)
+
+● Perfect! So the issue is that /inventory/reset (line 1459-1467) deletes the saved JSON file and loads defaults.
+
+  The fix: Modify the reset function to reload the SAVED data instead of deleting it. The reset should mean "reload from last save"
+  not "wipe everything to factory defaults".
+
+  Let me also check if there's a separate factory reset we need:
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 10 lines (ctrl+o to expand)
+
+● Here's the solution:
+
+  Problem identified: /inventory/reset deletes your saved data and loads factory defaults. When the page breaks and you use this URL
+  to fix it, you lose all your changes.
+
+  Solution:
+  1. Change /inventory/reset to reload FROM the saved file (keeping your data)
+  2. Add a NEW /inventory/factory-reset endpoint for truly wiping to defaults
+  3. Implement auto-save on every change so you never lose data
+
+  Let me implement these fixes:
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 11 additions and 3 removals
+       1458    }
+       1459
+       1460    void handleInventoryReset() {
+       1461 -      Serial.println("[INVENTORY] Resetting to defaults...");
+       1461 +      Serial.println("[INVENTORY] Reloading from saved data...");
+       1462 +      inventory.clear();
+       1463 +      loadInventoryFromSPIFFS();
+       1464 +      Serial.printf("[INVENTORY] Reset complete - %d categories loaded\n", inventory.size());
+       1465 +      server.send(200, "text/html", "<html><body><h1>Inventory Reloaded</h1><p>Loaded from last save. Your
+            + customizations are preserved.</p><p><a href='/inventory'>Return to Inventory</a></p></body></html>");
+       1466 +  }
+       1467 +
+       1468 +  void handleInventoryFactoryReset() {
+       1469 +      Serial.println("[INVENTORY] FACTORY RESET - Wiping to defaults...");
+       1470        SPIFFS.remove("/inventory.json");
+       1471        inventory.clear();
+       1472        initializeDefaultInventory();
+       1473 -      Serial.println("[INVENTORY] Reset complete");
+       1474 -      server.send(200, "text/html", "<html><body><h1>Inventory Reset to Defaults</h1
+            -  ><p><a href='/inventory'>Return to Inventory</a></p></body></html>");
+       1473 +      Serial.println("[INVENTORY] Factory reset complete");
+       1474 +      server.send(200, "text/html", "<html><body><h1>Factory Reset Complete</h1><p>All data wiped. Inventory reset to
+            +  defaults.</p><p><a href='/inventory'>Return to Inventory</a></p></body></html>");
+       1475    }
+       1476
+       1477    void loadInventoryFromSPIFFS() {
+
+● Now let's register the factory reset endpoint:
+
+● Search(pattern: "server\.on.*inventory/reset", path: "Master_ESP32\src\main.cpp", output_mode: "content")
+  ⎿  Found 10 lines (ctrl+o to expand)
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 1 addition
+       1665        server.on("/inventory/add", handleInventoryAddItem);
+       1666        server.on("/inventory/remove", handleInventoryRemoveItem);
+       1667        server.on("/inventory/reset", handleInventoryReset);
+       1668 +      server.on("/inventory/factory-reset", handleInventoryFactoryReset);
+       1669        server.on("/inventory/reload", handleInventoryReload);
+       1670        server.onNotFound(handleNotFound);
+       1671        server.begin();
+
+● Perfect! Now let's implement auto-save on every change. First, let me find where status changes and checkbox changes happen:
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 45 lines (ctrl+o to expand)
+
+● Now I need to create a helper function to auto-save and call it after each change:
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 14 additions and 5 removals
+       1186        server.send(400, "text/plain", "Invalid parameters");
+       1187    }
+       1188
+       1189 -  void handleInventorySave() {
+       1189 +  // Helper function to save inventory to SPIFFS (used by auto-save and manual save)
+       1190 +  bool saveInventoryToSPIFFS() {
+       1191        File file = SPIFFS.open("/inventory.json", "w");
+       1192        if (!file) {
+       1193 -          server.send(500, "text/plain", "Failed to open file");
+       1194 -          return;
+       1193 +          Serial.println("[INVENTORY] Failed to open file for writing");
+       1194 +          return false;
+       1195        }
+       1196
+       1197        // Build JSON manually
+     ...
+       1223
+       1224        file.print(json);
+       1225        file.close();
+       1226 -      Serial.printf("[INVENTORY] Saved %d categories to SPIFFS\n", inventory.size());
+       1227 -      server.send(200, "text/plain", "OK");
+       1226 +      Serial.printf("[INVENTORY] Auto-saved %d categories to SPIFFS\n", inventory.size());
+       1227 +      return true;
+       1228    }
+       1229
+       1230 +  void handleInventorySave() {
+       1231 +      if (saveInventoryToSPIFFS()) {
+       1232 +          server.send(200, "text/plain", "OK");
+       1233 +      } else {
+       1234 +          server.send(500, "text/plain", "Failed to save");
+       1235 +      }
+       1236 +  }
+       1237 +
+       1238    void handleInventoryResetAll() {
+       1239        for (size_t i = 0; i < inventory.size(); i++) {
+       1240            if (!inventory[i].isConsumable) continue;
+
+● Now let's add auto-save to all the change handlers:
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 1 addition
+       1152        if (cat >= 0 && cat < (int)inventory.size() && item >= 0 && status >= 0 && status <= 3) {
+       1153            if (inventory[cat].isConsumable && item < (int)inventory[cat].consumables.size()) {
+       1154                inventory[cat].consumables[item].status = status;
+       1155 +              saveInventoryToSPIFFS();  // Auto-save on every change
+       1156                server.send(200, "text/plain", "OK");
+       1157                return;
+       1158            }
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 1 addition
+       1179                } else {
+       1180                    inventory[cat].equipment[item].packed = (val == 1);
+       1181                }
+       1182 +              saveInventoryToSPIFFS();  // Auto-save on every change
+       1183                server.send(200, "text/plain", "OK");
+       1184                return;
+       1185            }
+
+● Now let's also auto-save when adding/removing items and during restock:
+
+● Search(pattern: "handleInventoryAddItem|handleInventoryRemoveItem", path: "Master_ESP32\src\main.cpp", output_mode: "content")
+  ⎿  Found 65 lines (ctrl+o to expand)
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 40 lines (ctrl+o to expand)
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 1 addition
+       1433                inventory[cat].equipment.push_back(EquipmentItem(name, false, false));
+       1434                Serial.printf("[INVENTORY] Added equipment '%s' to category %d\n", name.c_str(), cat);
+       1435            }
+       1436 +          saveInventoryToSPIFFS();  // Auto-save on add
+       1437            server.send(200, "text/plain", "OK");
+       1438            return;
+       1439        }
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 2 additions
+       1455                String itemName = inventory[cat].consumables[item].name;
+       1456                inventory[cat].consumables.erase(inventory[cat].consumables.begin() + item);
+       1457                Serial.printf("[INVENTORY] Removed consumable '%s' from category %d\n", itemName.c_str(), cat);
+       1458 +              saveInventoryToSPIFFS();  // Auto-save on remove
+       1459                server.send(200, "text/plain", "OK");
+       1460                return;
+       1461            } else if (!inventory[cat].isConsumable && item < (int)inventory[cat].equipment.size()) {
+       1462                String itemName = inventory[cat].equipment[item].name;
+       1463                inventory[cat].equipment.erase(inventory[cat].equipment.begin() + item);
+       1464                Serial.printf("[INVENTORY] Removed equipment '%s' from category %d\n", itemName.c_str(), cat);
+       1465 +              saveInventoryToSPIFFS();  // Auto-save on remove
+       1466                server.send(200, "text/plain", "OK");
+       1467                return;
+       1468            }
+
+● Now let's check the restock function and add auto-save there too:
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 80 lines (ctrl+o to expand)
+
+● Read(Master_ESP32\src\main.cpp)
+  ⎿  Read 25 lines (ctrl+o to expand)
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 1 addition
+       1320            }
+       1321
+       1322            Serial.printf("[INVENTORY] Restocked %d selected items\n", count);
+       1323 +          saveInventoryToSPIFFS();  // Auto-save after restock
+       1324            server.send(200, "text/plain", "OK");
+       1325        } else {
+       1326            Serial.println("[INVENTORY] No JSON body, this shouldn't happen");
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 1 addition
+       1246            }
+       1247        }
+       1248        Serial.println("[INVENTORY] Reset all to Full");
+       1249 +      saveInventoryToSPIFFS();  // Auto-save after reset all
+       1250        server.send(200, "text/plain", "OK");
+       1251    }
+       1252
+
+● Perfect! Now the data persistence is fixed. Let me update the todo and move on to alphabetical sorting:
+
+● Now let's implement alphabetical sorting. I'll add a helper function to sort items and call it after adding items or loading from
+  SPIFFS:
+
+● Update(Master_ESP32\include\DynamicInventory.h)
+  ⎿  Updated Master_ESP32\include\DynamicInventory.h with 22 additions
+       69        }
+       70    }
+       71
+       72 +  // Sort items alphabetically within a category
+       73 +  void sortCategoryItems(DynamicCategory& category) {
+       74 +      if (category.isConsumable) {
+       75 +          std::sort(category.consumables.begin(), category.consumables.end(),
+       76 +                    [](const ConsumableItem& a, const ConsumableItem& b) {
+       77 +                        return a.name.compareToIgnoreCase(b.name) < 0;
+       78 +                    });
+       79 +      } else {
+       80 +          std::sort(category.equipment.begin(), category.equipment.end(),
+       81 +                    [](const EquipmentItem& a, const EquipmentItem& b) {
+       82 +                        return a.name.compareToIgnoreCase(b.name) < 0;
+       83 +                    });
+       84 +      }
+       85 +  }
+       86 +
+       87 +  // Sort all categories alphabetically
+       88 +  void sortAllInventory() {
+       89 +      for (size_t i = 0; i < inventory.size(); i++) {
+       90 +          sortCategoryItems(inventory[i]);
+       91 +      }
+       92 +  }
+       93 +
+       94    // Initialize with default items
+       95    void initializeDefaultInventory() {
+       96        inventory.clear();
+
+● We need to include the algorithm header for std::sort. Let me add that:
+
+● Update(Master_ESP32\include\DynamicInventory.h)
+  ⎿  Updated Master_ESP32\include\DynamicInventory.h with 1 addition
+       1    #pragma once
+       2    #include <Arduino.h>
+       3    #include <vector>
+       4 +  #include <algorithm>
+       5
+       6    // Item status for consumables
+       7    enum ItemStatus {
+
+● Now let's call the sort function after adding items:
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 1 addition
+       1435                inventory[cat].equipment.push_back(EquipmentItem(name, false, false));
+       1436                Serial.printf("[INVENTORY] Added equipment '%s' to category %d\n", name.c_str(), cat);
+       1437            }
+       1438 +          sortCategoryItems(inventory[cat]);  // Sort alphabetically after adding
+       1439            saveInventoryToSPIFFS();  // Auto-save on add
+       1440            server.send(200, "text/plain", "OK");
+       1441            return;
+
+● Now let's also sort after loading from SPIFFS:
+
+● Update(Master_ESP32\src\main.cpp)
+  ⎿  Updated Master_ESP32\src\main.cpp with 1 addition
+       1583            Serial.println("[INVENTORY] Empty file, initializing defaults");
+       1584            initializeDefaultInventory();
+       1585        }
+       1586 +      sortAllInventory();  // Ensure alphabetical order after loading
+       1587    }
+       1588
+       1589    void handleInventoryReload() {
+
+● Great! Let me update the todo and compile to check for errors:
+
+● Bash("C:\Users\LENOVO\.platformio\penv\Scripts\platformio.exe" run)
+  ⎿  Error: NotPlatformIOProjectError: Not a PlatformIO project. `platformio.ini` file has not been found in current working directory
+     (C:\Trailer\CYD Build). To initialize new project please use `platformio project init` command
+
+● Bash(cd "C:\Trailer\CYD Build\Master_ESP32" && "C:\Users\LENOVO\.platformio\penv\Scripts\platformio.exe" run)
+  ⎿  Error: idf_tools.py installation failed
+     idf_tools.py installation failed
+     In file included from src/main.cpp:8:
+     include/DynamicInventory.h: In lambda function:
+     include/DynamicInventory.h:78:37: error: 'const class String' has no member named 'compareToIgnoreCase'
+        78 |                       return a.name.compareToIgnoreCase(b.name) < 0;
+           |                                     ^~~~~~~~~~~~~~~~~~~
+     include/DynamicInventory.h: In lambda function:
+     include/DynamicInventory.h:83:37: error: 'const class String' has no member named 'compareToIgnoreCase'
+        83 |                       return a.name.compareToIgnoreCase(b.name) < 0;
+     … +55 lines (ctrl+o to see all)
+
+● I see the issues. Arduino String doesn't have compareToIgnoreCase. Let me fix that and also fix the function declaration order:
+
+● Update(Master_ESP32\include\DynamicInventory.h)
+  ⎿  Updated Master_ESP32\include\DynamicInventory.h with 11 additions and 3 removals
+       70        }
+       71    }
+       72
+       73 -  // Sort items alphabetically within a category
+       73 +  // Sort items alphabetically within a category (case-insensitive)
+       74    void sortCategoryItems(DynamicCategory& category) {
+       75        if (category.isConsumable) {
+       76            std::sort(category.consumables.begin(), category.consumables.end(),
+       77                      [](const ConsumableItem& a, const ConsumableItem& b) {
+       78 -                        return a.name.compareToIgnoreCase(b.name) < 0;
+       78 +                        String aLower = a.name;
+       79 +                        String bLower = b.name;
+       80 +                        aLower.toLowerCase();
+       81 +                        bLower.toLowerCase();
+       82 +                        return aLower < bLower;
+       83                      });
+       84        } else {
+       85            std::sort(category.equipment.begin(), category.equipment.end(),
+       86                      [](const EquipmentItem& a, const EquipmentItem& b) {
+       87 -                        return a.name.compareToIgnoreCase(b.name) < 0;
+       87 +                        String aLower = a.name;
+       88 +                        String bLower = b.name;
+       89 +                        aLower.toLowerCase();
+       90 +                        bLower.toLowerCase();
+       91 +                        return aLower < bLower;
+       92                      });
+       93        }
+       94    }
+	   
+	   
+	   
+  Todos
+  [×] Fix data persistence: auto-save on every change instead of manual save
+  [×] Implement alphabetical sorting within categories (auto-sort on add)
+  [ ] Test the changes by building the project
+  [ ] Add ability to create new categories dynamically
+  [ ] Add summary tiles to Equipment page (NOT checked/packed counts)
+  [ ] Add two-level category structure (TRAILER/EXTRAS with subcategories)
+  [ ] Change Remove button to Edit button with delete/rename/move options

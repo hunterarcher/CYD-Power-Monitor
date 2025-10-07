@@ -1,0 +1,120 @@
+Category Type;Category;Item Name;Status;Lives in Trailer;Checked;Packed;Taking;Last Updated
+CONSUMABLES;General;Batteries;OK;Yes;N/A;N/A;N/A;3060
+CONSUMABLES;General;Citronella Candles;OK;Yes;N/A;N/A;N/A;3060
+CONSUMABLES;General;Duct Tape;OK;Yes;N/A;N/A;N/A;3071
+CONSUMABLES;General;Gas Bottle;OK;Yes;N/A;N/A;N/A;3071
+CONSUMABLES;General;Gas lighter refill;OK;Yes;N/A;N/A;N/A;3082
+CONSUMABLES;General;Glow Sticks;OK;Yes;N/A;N/A;N/A;3082
+CONSUMABLES;General;Matches;OK;Yes;N/A;N/A;N/A;3083
+CONSUMABLES;General;Mystical Fire Sachets;OK;Yes;N/A;N/A;N/A;3093
+CONSUMABLES;General;Zip Ties;OK;Yes;N/A;N/A;N/A;3094
+CONSUMABLES;Kitchen;Black bags;Low;Yes;N/A;N/A;N/A;2927
+CONSUMABLES;Kitchen;Glad wrap;Out;Yes;N/A;N/A;N/A;2927
+CONSUMABLES;Kitchen;Lappies;Low;Yes;N/A;N/A;N/A;2938
+CONSUMABLES;Kitchen;Paper Plates;Low;Yes;N/A;N/A;N/A;2938
+CONSUMABLES;Kitchen;Roller towel;Low;Yes;N/A;N/A;N/A;2948
+CONSUMABLES;Kitchen;Serviettes;OK;Yes;N/A;N/A;N/A;2949
+CONSUMABLES;Kitchen;Sponges;Out;Yes;N/A;N/A;N/A;2949
+CONSUMABLES;Kitchen;Sunlight;Out;Yes;N/A;N/A;N/A;2960
+CONSUMABLES;Kitchen;Tin foil;Out;Yes;N/A;N/A;N/A;2960
+CONSUMABLES;Kitchen;Wet wipes;OK;Yes;N/A;N/A;N/A;2971
+CONSUMABLES;Kitchen;Ziploc bags;OK;Yes;N/A;N/A;N/A;2971
+CONSUMABLES;Non-Perishables;Bouquet Garni;OK;Yes;N/A;N/A;N/A;2972
+CONSUMABLES;Non-Perishables;Coffee (instant);OK;Yes;N/A;N/A;N/A;2983
+CONSUMABLES;Non-Perishables;Cooking Oil;OK;Yes;N/A;N/A;N/A;2983
+CONSUMABLES;Non-Perishables;Filter Coffee;OK;Yes;N/A;N/A;N/A;2994
+CONSUMABLES;Non-Perishables;Hot Chocolate;OK;Yes;N/A;N/A;N/A;2994
+CONSUMABLES;Non-Perishables;Lemon Juice;OK;No;N/A;N/A;N/A;3005
+CONSUMABLES;Non-Perishables;Marshmallows;OK;Yes;N/A;N/A;N/A;3005
+CONSUMABLES;Non-Perishables;Mixed herbs/Bay Leaves;OK;Yes;N/A;N/A;N/A;3016
+CONSUMABLES;Non-Perishables;Normal Tea;OK;Yes;N/A;N/A;N/A;3026
+CONSUMABLES;Non-Perishables;Peanut butter;OK;Yes;N/A;N/A;N/A;3027
+CONSUMABLES;Non-Perishables;Pepper;OK;Yes;N/A;N/A;N/A;3037
+CONSUMABLES;Non-Perishables;Rooibos Tea;OK;Yes;N/A;N/A;N/A;3038
+CONSUMABLES;Non-Perishables;Salt;OK;Yes;N/A;N/A;N/A;3038
+CONSUMABLES;Non-Perishables;Sugar (sachets);OK;Yes;N/A;N/A;N/A;3048
+CONSUMABLES;Non-Perishables;Tomato Sauce;OK;Yes;N/A;N/A;N/A;3049
+CONSUMABLES;Perishables;Apples;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Bacon;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Baked beans ;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Biscuits;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Braai meat;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Bread ;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Cereal;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Cheese;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Mielies ;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Milk eggs;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Peanut butter;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Popcorn ;Out;Yes;N/A;N/A;N/A;
+CONSUMABLES;Perishables;Rolls;Out;Yes;N/A;N/A;N/A;
+ESSENTIALS;Misc;Chargers;OK;Yes;No;No;No;582818
+ESSENTIALS;Misc;Extra pot;OK;Yes;No;No;No;643059
+ESSENTIALS;Personal Items;Clothes;OK;Yes;No;No;No;3100
+ESSENTIALS;Personal Items;Cozzies;OK;Yes;No;No;No;3100
+ESSENTIALS;Personal Items;Meds;OK;Yes;No;No;No;3100
+ESSENTIALS;Personal Items;Shoes;OK;Yes;No;No;No;3100
+ESSENTIALS;Personal Items;Sunblock;OK;Yes;No;No;No;3100
+ESSENTIALS;Personal Items;Toiletries;OK;Yes;No;No;No;3100
+ESSENTIALS;Safety and Fun;Bikes/helmets;OK;Yes;No;No;No;3102
+ESSENTIALS;Safety and Fun;Boat and ore;OK;Yes;No;No;No;3102
+ESSENTIALS;Safety and Fun;Books;OK;Yes;No;No;No;3102
+ESSENTIALS;Safety and Fun;Buckets;OK;Yes;No;No;No;3102
+ESSENTIALS;Safety and Fun;First aid;OK;Yes;No;No;No;3102
+ESSENTIALS;Safety and Fun;Life jacket;OK;Yes;No;No;No;3102
+ESSENTIALS;Safety and Fun;Toys;OK;Yes;No;No;No;3102
+ESSENTIALS;Safety and Fun;Walkie Talkies + chargers;OK;Yes;No;No;No;3102
+ESSENTIALS;Sleep and Comfort;Beach towels;OK;Yes;No;No;No;3100
+ESSENTIALS;Sleep and Comfort;Duvet;OK;Yes;No;No;No;3100
+ESSENTIALS;Sleep and Comfort;Duvet Cover;OK;Yes;No;No;No;3100
+ESSENTIALS;Sleep and Comfort;Pillows;OK;Yes;No;No;No;3100
+OPTIONAL;Cooking Extras;Braai Grid - Large Flat;OK;Yes;No;No;No;3104
+OPTIONAL;Cooking Extras;Cast Iron Bread Maker;OK;Yes;Yes;Yes;Yes;3104
+OPTIONAL;Cooking Extras;Pizza Oven + Plates;OK;Yes;No;No;No;3105
+OPTIONAL;Cooking Extras;Potjie + accessories;OK;Yes;No;No;Yes;3105
+OPTIONAL;Cooking Extras;Potjie Stand;OK;Yes;No;No;Yes;3105
+OPTIONAL;Extra Furniture;Hammock;OK;Yes;Yes;Yes;Yes;3104
+OPTIONAL;Extra Furniture;Large foldup table;OK;Yes;No;No;Yes;3104
+OPTIONAL;Extra Furniture;Small tables;OK;Yes;No;No;No;3104
+OPTIONAL;Extra Furniture;Table + Benches;OK;Yes;No;No;Yes;3104
+OPTIONAL;Extra Lighting;Torches;OK;Yes;No;No;No;3106
+OPTIONAL;Gear and Storage;Backpacks;OK;Yes;No;No;No;3106
+OPTIONAL;Gear and Storage;Cooler Box;OK;Yes;No;No;Yes;3107
+OPTIONAL;Gear and Storage;Floaties;OK;Yes;No;No;Yes;3107
+OPTIONAL;Gear and Storage;Games;OK;Yes;No;No;Yes;3107
+OPTIONAL;Shelter and Setup;2/4 Man Tent + Poles;OK;Yes;No;No;No;3102
+OPTIONAL;Shelter and Setup;Ground sheets;OK;Yes;Yes;Yes;Yes;3103
+OPTIONAL;Shelter and Setup;Nylon Tent + Poles;OK;Yes;No;No;No;3103
+OPTIONAL;Shelter and Setup;Pop-up gazebo + ground sheets;OK;Yes;No;No;Yes;3103
+OPTIONAL;Shelter and Setup;Windbreak;OK;Yes;No;No;No;3103
+TRAILER;Crockery and Cutlery;Bowls;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Forks;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Knives;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Metal Cups;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Mugs;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Paper Plate Holder;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Plastic plates;OK;Yes;Yes;Yes;No;257536
+TRAILER;Crockery and Cutlery;Scissors;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Sharp Knives;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Spoons;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Crockery and Cutlery;Teaspoons;OK;Yes;Yes;Yes;Yes;3098
+TRAILER;Kitchen Basics;Braai Brush;OK;Yes;No;No;Yes;3096
+TRAILER;Kitchen Basics;Braai Grid - Scissor;OK;Yes;Yes;Yes;Yes;3096
+TRAILER;Kitchen Basics;Cooking Utensils;OK;Yes;Yes;Yes;Yes;3096
+TRAILER;Kitchen Basics;Fire Fan;OK;Yes;Yes;Yes;Yes;3096
+TRAILER;Kitchen Basics;Gas lighter;OK;Yes;Yes;Yes;Yes;3096
+TRAILER;Kitchen Basics;Gas stove top;OK;Yes;Yes;Yes;Yes;3096
+TRAILER;Kitchen Basics;Kettle;OK;Yes;Yes;Yes;Yes;3096
+TRAILER;Kitchen Basics;Pots and Pans;OK;Yes;Yes;Yes;Yes;3096
+TRAILER;Kitchen Basics;Skottle;OK;Yes;Yes;Yes;Yes;3096
+TRAILER;Kitchen Basics;Tongs;OK;Yes;Yes;Yes;Yes;3097
+TRAILER;Tools and Utilities;Axe;OK;Yes;Yes;Yes;Yes;3099
+TRAILER;Tools and Utilities;Dish cloths;OK;Yes;Yes;Yes;Yes;3099
+TRAILER;Tools and Utilities;Extension Cords;OK;Yes;No;No;Yes;3099
+TRAILER;Tools and Utilities;Mallet;OK;Yes;Yes;Yes;Yes;3099
+TRAILER;Tools and Utilities;Multi-adapters;OK;Yes;Yes;Yes;Yes;3099
+TRAILER;Tools and Utilities;Multitools;OK;Yes;Yes;Yes;Yes;3099
+TRAILER;Tools and Utilities;Washing bowl - collapsible;OK;Yes;Yes;Yes;Yes;3099
+TRAILER;Trailer Systems;EcoFlow;OK;Yes;Yes;Yes;Yes;3095
+TRAILER;Trailer Systems;Hose to extend tap;OK;Yes;Yes;Yes;Yes;3095
+TRAILER;Trailer Systems;Solar panel extension;OK;Yes;Yes;Yes;Yes;3095
+TRAILER;Trailer Systems;Stand for Kitchen;OK;Yes;Yes;Yes;Yes;3095
