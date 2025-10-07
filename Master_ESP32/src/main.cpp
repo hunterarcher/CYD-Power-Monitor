@@ -58,6 +58,7 @@ String getStorageInfo();
 void handleInventoryDeleteBackup();
 void handleInventoryAddCategory();
 void handleInventoryRenameItem();
+void handleInventoryEditConsumable();
 void handleInventoryMoveItem();
 void handleInventoryDeleteItem();
 void handleCategoryRename();
@@ -941,17 +942,35 @@ void handleTabContent() {
         html += "<div class='summary-card' onclick='filterStatus(2)' style='cursor:pointer'><div class='label'>Out of Stock</div><div class='value' style='color:#ef4444'>" + String(outCount) + "</div></div>";
         html += "</div>";
         
-        // Trailer filtering buttons
-        html += "<div style='margin:15px 0;text-align:center'>";
-        html += "<button onclick='filterTrailer(-1)' style='background:#667eea;color:white;border:none;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer'>All Items</button>";
-        html += "<button onclick='filterTrailer(1)' style='background:#4af;color:black;border:none;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer'>🚚 Lives in Trailer</button>";
-        html += "<button onclick='filterTrailer(0)' style='background:#ff6b35;color:white;border:none;padding:8px 12px;margin:0 5px;border-radius:5px;cursor:pointer'>🛒 Buy Each Trip</button>";
+        // Enhanced Filtering System
+        html += "<div style='background:rgba(255,255,255,0.1);padding:15px;border-radius:10px;margin:15px 0'>";
+        html += "<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px'>";
+        html += "<div style='font-weight:bold;font-size:14px'>🔍 Advanced Filters</div>";
+        html += "<button onclick='clearAllFilters()' style='background:#666;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px'>Clear All</button>";
+        html += "</div>";
+        
+        // Location Filters
+        html += "<div style='margin-bottom:10px'>";
+        html += "<div style='font-size:12px;opacity:0.8;margin-bottom:5px'>LOCATION:</div>";
+        html += "<button onclick='applyLocationFilter(\"all\")' id='loc-all' class='filter-btn active' style='background:#667eea;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>All Items</button>";
+        html += "<button onclick='applyLocationFilter(\"trailer\")' id='loc-trailer' class='filter-btn' style='background:#4af;color:black;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>🚚 Lives in Trailer</button>";
+        html += "<button onclick='applyLocationFilter(\"trip\")' id='loc-trip' class='filter-btn' style='background:#ff6b35;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>🛒 Buy Each Trip</button>";
+        html += "</div>";
+        
+        // Status Filters
+        html += "<div>";
+        html += "<div style='font-size:12px;opacity:0.8;margin-bottom:5px'>STATUS:</div>";
+        html += "<button onclick='applyStatusFilter(\"all\")' id='status-all' class='filter-btn active' style='background:#667eea;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>All Status</button>";
+        html += "<button onclick='applyStatusFilter(\"ok\")' id='status-ok' class='filter-btn' style='background:#22c55e;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>✅ OK Stock</button>";
+        html += "<button onclick='applyStatusFilter(\"low\")' id='status-low' class='filter-btn' style='background:#f59e0b;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>⚠️ Low Stock</button>";
+        html += "<button onclick='applyStatusFilter(\"out\")' id='status-out' class='filter-btn' style='background:#ef4444;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>❌ Out of Stock</button>";
+        html += "</div>";
         html += "</div>";
         
         for (size_t i = 0; i < inventory.size(); i++) {
             if (!inventory[i].isConsumable) continue;
             
-            html += "<div class='c'>";
+            html += "<div class='inv-category' data-category-index='" + String(i) + "'>";
             html += "<div class='cat-header'>";
             html += "<div class='cat-title' onclick='toggleCat(" + String(i) + ")'>" + inventory[i].icon + " " + inventory[i].name + "<div class='cat-count'>" + String(inventory[i].consumables.size()) + "</div></div>";
             html += "<div class='cat-controls'>";
@@ -962,21 +981,23 @@ void handleTabContent() {
             html += "<div id='cat" + String(i) + "' class='items-container expanded'>";
             for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
                 String trailerIcon = inventory[i].consumables[j].livesInTrailer ? "🚚" : "🛒";
-                html += "<div class='item' data-status='" + String(inventory[i].consumables[j].status) + "' data-trailer='" + String(inventory[i].consumables[j].livesInTrailer ? "1" : "0") + "'>";
+                html += "<div class='item consumable-item' data-status='" + String(inventory[i].consumables[j].status) + "' data-trailer='" + String(inventory[i].consumables[j].livesInTrailer ? "1" : "0") + "' data-item-index='" + String(j) + "'>";
                 html += "<span class='item-name'>" + trailerIcon + " " + inventory[i].consumables[j].name + "</span>";
                 html += "<div class='status-btns'>";
                 html += String("<button class='status-btn ok") + (inventory[i].consumables[j].status <= STATUS_OK ? " active" : "") + "' onclick='setStatus(" + String(i) + "," + String(j) + "," + String(STATUS_OK) + ")'>OK</button>";
                 html += String("<button class='status-btn low") + (inventory[i].consumables[j].status == STATUS_LOW ? " active" : "") + "' onclick='setStatus(" + String(i) + "," + String(j) + "," + String(STATUS_LOW) + ")'>Low</button>";
                 html += String("<button class='status-btn out") + (inventory[i].consumables[j].status == STATUS_OUT ? " active" : "") + "' onclick='setStatus(" + String(i) + "," + String(j) + "," + String(STATUS_OUT) + ")'>Out</button>";
-                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].consumables[j].name + "\")' title='Options'>\u{22EE}</button>";
+                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='editItem(" + String(i) + "," + String(j) + ",true,\"" + inventory[i].consumables[j].name + "\"," + String(inventory[i].consumables[j].livesInTrailer ? "true" : "false") + ")' title='Edit'>✏️</button>";
                 html += "</div></div>";
             }
-            html += "<button class='action-btn secondary' style='margin-top:10px;width:100%' onclick='addItem(" + String(i) + ")'>\u{2795} Add Item</button>";
             html += "</div></div>";
         }
 
         html += "<div class='action-btns'>";
+        html += "<button class='action-btn secondary' onclick='clearAllConsumables()'>\u{1F5D1} Clear All</button>";
         html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(true)'>\u{1F4C1} Add Category</button>";
+        html += "<button class='action-btn primary' onclick='showAddConsumableModal()' style='background:#22c55e'>\u{2795} Add Item</button>";
+        html += "<button class='action-btn secondary' onclick='resetAll()'>🔄 Reset All to Full</button>";
         html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div>";
     } 
@@ -1024,17 +1045,16 @@ void handleTabContent() {
                 html += String("<button class='status-btn checked") + (inventory[i].equipment[j].checked ? " active" : "") + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"checked\",2)'>Checked</button>";
                 html += String("<button class='status-btn packed") + (inventory[i].equipment[j].packed ? " active" : "") + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"packed\",2)'>Packed</button>";
                 html += "</div>";
-                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\")' title='Options'>⋮</button>";
+                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\",false,false)' title='Options'>⋮</button>";
                 html += "</div>";
             }
-            html += "<button class='action-btn secondary' style='margin-top:10px;width:100%' onclick='addItem(" + String(i) + ")'>\u{2795} Add Item</button>";
             html += "</div></div>";
         }
 
         html += "<div class='action-btns'>";
         html += "<button class='action-btn secondary' onclick='clearAllTrailer()'>\u{1F5D1} Clear All</button>";
         html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(false)'>\u{1F4C1} Add Category</button>";
-        html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory/backups\"'>\u{1F4C4} Backups</button>";
+        html += "<button class='action-btn primary' onclick='showAddEquipmentModal()' style='background:#22c55e'>\u{2795} Add Item</button>";
         html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div>";
     }
@@ -1082,16 +1102,16 @@ void handleTabContent() {
                 html += String("<button class='status-btn checked") + (inventory[i].equipment[j].checked ? " active" : "") + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"checked\",3)'>Checked</button>";
                 html += String("<button class='status-btn packed") + (inventory[i].equipment[j].packed ? " active" : "") + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"packed\",3)'>Packed</button>";
                 html += "</div>";
-                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\")' title='Options'>⋮</button>";
+                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\",false,false)' title='Options'>⋮</button>";
                 html += "</div>";
             }
-            html += "<button class='action-btn secondary' style='margin-top:10px;width:100%' onclick='addItem(" + String(i) + ")'>\u{2795} Add Item</button>";
             html += "</div></div>";
         }
 
         html += "<div class='action-btns'>";
         html += "<button class='action-btn primary' onclick='clearAllEssentials()'>🔄 Clear All</button>";
         html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(false)'>\u{1F4C1} Add Category</button>";
+        html += "<button class='action-btn primary' onclick='showAddEquipmentModal()' style='background:#22c55e'>\u{2795} Add Item</button>";
         html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div>";
     }
@@ -1143,16 +1163,16 @@ void handleTabContent() {
                 html += String("<button class='status-btn checked") + (inventory[i].equipment[j].checked && inventory[i].equipment[j].taking ? " active" : "") + disabledClass + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"checked\",4)'>Checked</button>";
                 html += String("<button class='status-btn packed") + (inventory[i].equipment[j].packed && inventory[i].equipment[j].taking ? " active" : "") + disabledClass + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"packed\",4)'>Packed</button>";
                 html += "</div>";
-                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\")' title='Options'>⋮</button>";
+                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\",false,false)' title='Options'>⋮</button>";
                 html += "</div>";
             }
-            html += "<button class='action-btn secondary' style='margin-top:10px;width:100%' onclick='addItem(" + String(i) + ")'>\u{2795} Add Item</button>";
             html += "</div></div>";
         }
 
         html += "<div class='action-btns'>";
         html += "<button class='action-btn primary' onclick='clearAllOptional()'>🔄 Clear All</button>";
         html += "<button class='action-btn secondary' onclick='showAddCategoryDialog(false)'>\u{1F4C1} Add Category</button>";
+        html += "<button class='action-btn primary' onclick='showAddEquipmentModal()' style='background:#22c55e'>\u{2795} Add Item</button>";
         html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div>";
     }
@@ -1210,18 +1230,22 @@ void handleTabContent() {
         if (shoppingCount > 0) {
             html += "<div id='cat99' class='items-container expanded'>";
             html += "<div style='margin-bottom:8px;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px'>";
-            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:6px'>FILTER BY LOCATION:</div>";
+            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:6px'>📍 LOCATION FILTER:</div>";
+            html += "<div style='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px'>";
+            html += "<button onclick='applyShoppingLocationFilter(\"all\")' id='shop-loc-all' class='filter-btn active' style='background:#667eea;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>All Items</button>";
+            html += "<button onclick='applyShoppingLocationFilter(\"trailer\")' id='shop-loc-trailer' class='filter-btn' style='background:#4af;color:black;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>🚚 Lives in Trailer</button>";
+            html += "<button onclick='applyShoppingLocationFilter(\"trip\")' id='shop-loc-trip' class='filter-btn' style='background:#ff6b35;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>🛒 Buy Each Trip</button>";
+            html += "</div>";
+            html += "<div style='font-size:11px;opacity:0.7;margin-bottom:6px'>🎯 STATUS FILTER:</div>";
             html += "<div style='display:flex;gap:6px;flex-wrap:wrap'>";
-            html += "<button onclick='filterShoppingTrailer(\"all\")' class='active' id='shopping-filter-all' style='padding:4px 8px;background:rgba(255,255,255,0.3);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer'>All Items</button>";
-            html += "<button onclick='filterShoppingTrailer(\"trailer\")' id='shopping-filter-trailer' style='padding:4px 8px;background:rgba(255,255,255,0.1);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer'>🚚 Lives in Trailer</button>";
-            html += "<button onclick='filterShoppingTrailer(\"trip\")' id='shopping-filter-trip' style='padding:4px 8px;background:rgba(255,255,255,0.1);border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer'>🛒 Buy Each Trip</button>";
+            html += "<button onclick='applyShoppingStatusFilter(\"all\")' id='shop-status-all' class='filter-btn active' style='background:#667eea;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>All Status</button>";
+            html += "<button onclick='applyShoppingStatusFilter(\"low\")' id='shop-status-low' class='filter-btn' style='background:#f59e0b;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>⚠️ Low Stock</button>";
+            html += "<button onclick='applyShoppingStatusFilter(\"out\")' id='shop-status-out' class='filter-btn' style='background:#ef4444;color:white;border:none;padding:6px 10px;margin:2px;border-radius:5px;cursor:pointer;font-size:11px'>❌ Out of Stock</button>";
             html += "</div></div>";
             html += "<div style='margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap'>";
-            html += "<button onclick=\"selectItems('all')\" style='padding:6px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select All</button>";
+            html += "<button onclick=\"selectItems('all')\" style='padding:6px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select All Visible</button>";
             html += "<button onclick=\"selectItems('out')\" style='padding:6px 12px;background:rgba(239,68,68,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select Out Only</button>";
             html += "<button onclick=\"selectItems('low')\" style='padding:6px 12px;background:rgba(245,158,11,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Select Low Only</button>";
-            html += "<button onclick=\"selectItems('trailer')\" style='padding:6px 12px;background:rgba(68,202,255,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>🚚 Trailer Items</button>";
-            html += "<button onclick=\"selectItems('trip')\" style='padding:6px 12px;background:rgba(255,107,53,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>🛒 Trip Items</button>";
             html += "<button onclick=\"selectItems('none')\" style='padding:6px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer'>Deselect All</button>";
             html += "</div>";
             html += shoppingItems + "</div>";
@@ -1235,9 +1259,8 @@ void handleTabContent() {
         if (shoppingCount > 0) {
             html += "<button class='action-btn primary' onclick='markRestocked()'>✅ Mark Selected as Restocked</button>";
         }
-        html += "<button class='action-btn secondary' onclick='copyList()'>📋 Copy List</button>";
+        html += "<button class='action-btn secondary' onclick='copyFilteredList()'>📋 Copy Visible List</button>";
         html += "<button class='action-btn secondary' onclick='downloadList()'>⬇️ Download</button>";
-        html += "<button class='action-btn secondary' onclick='resetAll()'>🔄 Reset All to Full</button>";
         html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory\"'>\u{1F3E0} Main Dashboard</button>";
         html += "</div";
     }
@@ -1287,6 +1310,8 @@ void handleInventory() {
     html += ".status-btn.packed{background:#22c55e;color:#fff}";
     html += ".status-btn.taking{background:#8b5cf6;color:#fff}";
     html += ".status-btn.disabled{background:#6b7280;opacity:0.4;cursor:not-allowed}";
+    html += ".filter-btn{opacity:0.7;transition:all 0.2s}";
+    html += ".filter-btn.active{opacity:1;transform:scale(0.95);box-shadow:inset 0 2px 4px rgba(0,0,0,0.3)}";
     html += ".checkbox-group{display:flex;gap:12px}";
     html += ".checkbox-label{display:flex;align-items:center;gap:6px;font-size:13px;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.05);transition:all 0.2s;cursor:pointer;opacity:0.6}";
     html += ".checkbox-label:has(input:checked){opacity:1;background:rgba(255,255,255,0.15);box-shadow:0 0 8px rgba(255,255,255,0.2)}";
@@ -1365,7 +1390,7 @@ void handleInventory() {
     html += "<div class='header'>";
     html += "<h1>\u{1F69A} Inventory Tracker</h1></div>";
 
-    // Tabs
+    // Tabs - restored to top for all pages
     html += "<div class='tabs'>";
     html += "<button class='tab active' onclick='showTab(0)'><div>\u{1F3E0}</div><div>Main</div></button>";
     html += "<button class='tab' onclick='showTab(1)'><div>\u{1F374}</div><div>Consumables</div></button>";
@@ -1440,17 +1465,30 @@ void handleInventory() {
     // Main Dashboard Cards
     html += "<div class='main-cards'>";
     
-    // Consumables Card
+    // Consumables - Trailer Card
     html += "<div class='main-card' onclick='showTab(1)'>";
     html += "<div class='main-card-left'>";
-    html += "<div class='main-card-icon'>\u{1F374}</div>";
+    html += "<div class='main-card-icon'>\u{1F69A}</div>";
     html += "<div class='main-card-title'>Consumables</div>";
-    html += "<div style='font-size:12px;opacity:0.7;margin-top:4px'>\u{1F69A} Trailer: " + String(trailerOk + trailerLow + trailerOut) + " | \u{1F6D2} Trip: " + String(tripOk + tripLow + tripOut) + "</div>";
+    html += "<div style='font-size:12px;opacity:0.7;margin-top:4px'>Trailer</div>";
     html += "</div>";
     html += "<div class='main-card-right'>";
-    html += "<div class='main-card-tile ok'><div class='tile-label'>OK Stock</div><div class='tile-value'>" + String(okCount) + "</div><div style='font-size:10px;opacity:0.6'>\u{1F69A}" + String(trailerOk) + " \u{1F6D2}" + String(tripOk) + "</div></div>";
-    html += "<div class='main-card-tile low'><div class='tile-label'>Low Stock</div><div class='tile-value'>" + String(lowCount) + "</div><div style='font-size:10px;opacity:0.6'>\u{1F69A}" + String(trailerLow) + " \u{1F6D2}" + String(tripLow) + "</div></div>";
-    html += "<div class='main-card-tile out'><div class='tile-label'>Out of Stock</div><div class='tile-value'>" + String(outCount) + "</div><div style='font-size:10px;opacity:0.6'>\u{1F69A}" + String(trailerOut) + " \u{1F6D2}" + String(tripOut) + "</div></div>";
+    html += "<div class='main-card-tile ok'><div class='tile-label'>OK Stock</div><div class='tile-value'>" + String(trailerOk) + "</div></div>";
+    html += "<div class='main-card-tile low'><div class='tile-label'>Low Stock</div><div class='tile-value'>" + String(trailerLow) + "</div></div>";
+    html += "<div class='main-card-tile out'><div class='tile-label'>Out of Stock</div><div class='tile-value'>" + String(trailerOut) + "</div></div>";
+    html += "</div></div>";
+    
+    // Consumables - Trip Card  
+    html += "<div class='main-card' onclick='showTab(1)'>";
+    html += "<div class='main-card-left'>";
+    html += "<div class='main-card-icon'>\u{1F6D2}</div>";
+    html += "<div class='main-card-title'>Consumables</div>";
+    html += "<div style='font-size:12px;opacity:0.7;margin-top:4px'>Trip</div>";
+    html += "</div>";
+    html += "<div class='main-card-right'>";
+    html += "<div class='main-card-tile ok'><div class='tile-label'>OK Stock</div><div class='tile-value'>" + String(tripOk) + "</div></div>";
+    html += "<div class='main-card-tile low'><div class='tile-label'>Low Stock</div><div class='tile-value'>" + String(tripLow) + "</div></div>";
+    html += "<div class='main-card-tile out'><div class='tile-label'>Out of Stock</div><div class='tile-value'>" + String(tripOut) + "</div></div>";
     html += "</div></div>";
     
     // Trailer Card
@@ -1491,7 +1529,7 @@ void handleInventory() {
     
     html += "</div>"; // Close main-cards
     
-    // Quick Actions
+    // Navigation Actions (moved below cards for better main dashboard focus)
     html += "<div class='action-btns'>";
     html += "<button class='action-btn primary' onclick='window.location.href=\"/\"'>\u{1F3E0} Home (Monitoring)</button>";
     html += "<button class='action-btn secondary' onclick='window.location.href=\"/inventory/backups\"'>\u{1F4C4} Backups</button>";
@@ -1505,6 +1543,8 @@ void handleInventory() {
 
     // JavaScript
     html += "<script>";
+    html += "let editingCategory=-1;";
+    html += "let editingIndex=-1;";
     html += "function showTab(n){";
     html += "document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i==n));";
     html += "let mainTab=document.getElementById('tab0');";
@@ -1556,9 +1596,7 @@ void handleInventory() {
     html += "updateConsumableTiles();}";
 
     html += "function updateConsumableTiles(){";
-    html += "let currentTab=document.querySelector('.tab.active');";
-    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
-    html += "if(tabIndex==1)setTimeout(()=>showTab(1),100);}";
+    html += "updateSummary();updateFilteredTileCounts();applyAllFilters();}";
 
     html += "function updateSummary(){";
     html += "fetch('/inventory/stats').then(r=>r.json()).then(d=>{";
@@ -1628,6 +1666,23 @@ void handleInventory() {
     html += "fetch('/inventory/clearall?type=trailer').then(r=>{";
     html += "if(r.ok){setTimeout(()=>showTab(2),100);}else{alert('Clear failed');}});}";
 
+    html += "function clearAllConsumables(){";
+    html += "let filteredCount=document.querySelectorAll('.inv-category .item:not([style*=\"display: none\"])').length;";
+    html += "let totalCount=document.querySelectorAll('.inv-category .item').length;";
+    html += "let filterText=filteredCount===totalCount?'all consumables':'visible filtered items ('+filteredCount+' of '+totalCount+')';";
+    html += "if(!confirm('Set '+filterText+' to OUT status for stocktaking?'))return;";
+    html += "let visibleItems=[];";
+    html += "document.querySelectorAll('.inv-category .item:not([style*=\"display: none\"])').forEach(item=>{";
+    html += "let catIndex=item.closest('.inv-category').getAttribute('data-category-index');";
+    html += "let itemIndex=item.getAttribute('data-item-index');";
+    html += "if(catIndex!==null&&itemIndex!==null)visibleItems.push({cat:catIndex,item:itemIndex});});";
+    html += "if(visibleItems.length===0){alert('No visible items to clear');return;}";
+    html += "let payload=JSON.stringify({items:visibleItems});";
+    html += "console.log('Sending clear payload:',payload);";
+    html += "fetch('/inventory/clearall?type=consumables',{method:'POST',headers:{'Content-Type':'application/json'},body:payload}).then(r=>{";
+    html += "console.log('Clear response:',r.status,r.ok);";
+    html += "if(r.ok){let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Clear failed');}});}";
+
     html += "function saveInventory(){";
     html += "fetch('/inventory/save').then(r=>{if(r.ok){";
     html += "window.scrollTo({top:0,behavior:'smooth'});";
@@ -1636,15 +1691,13 @@ void handleInventory() {
 
     html += "function setCheckWithUpdate(cat,item,type,val,tabNum){";
     html += "fetch('/inventory/check?cat='+cat+'&item='+item+'&type='+type+'&val='+(val?1:0)).then(()=>{";
-    html += "setTimeout(()=>showTab(tabNum),100);});}";
+    html += "setTimeout(()=>{updateSummary();updateFilteredTileCounts();applyAllFilters();},100);});}";
 
-    html += "function showItemOptions(cat,item,name){";
-    html += "let action=prompt('Choose action for \"'+name+'\":\\n\\n1 - Rename\\n2 - Delete\\n3 - Move to different category\\n\\nEnter 1, 2, or 3:');";
+    html += "function showItemOptions(cat,item,name,isConsumable,currentTrailer){";
+    html += "let action=prompt('Choose action for \"'+name+'\":\\n\\n1 - Edit Item\\n2 - Delete\\n3 - Move to different category\\n\\nEnter 1, 2, or 3:');";
     html += "if(action==='1'){";
-    html += "let newName=prompt('Enter new name:',name);";
-    html += "if(newName&&newName!==name){";
-    html += "fetch('/inventory/rename?cat='+cat+'&item='+item+'&name='+encodeURIComponent(newName)).then(r=>{";
-    html += "if(r.ok){let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Rename failed');}});}}";
+    html += "editItem(cat,item,isConsumable,name,currentTrailer);";
+    html += "}";
     html += "else if(action==='2'){";
     html += "if(confirm('Delete \"'+name+'\"?')){";
     html += "fetch('/inventory/delete?cat='+cat+'&item='+item).then(r=>{";
@@ -1690,22 +1743,72 @@ void handleInventory() {
     html += "let activeTrailerFilter=-1;";
     html += "function filterStatus(status){";
     html += "if(activeFilter==status){activeFilter=-1;status=-1;}else{activeFilter=status;}";
-    html += "for(let i=0;i<3;i++){";
-    html += "let container=document.getElementById('cat'+i);";
-    html += "if(container)container.querySelectorAll('.item').forEach(item=>{";
+    html += "document.querySelectorAll('.inv-category .item').forEach(item=>{";
     html += "let itemStatus=parseInt(item.getAttribute('data-status'));";
-    html += "item.style.display=(status==-1||itemStatus==status)?'flex':'none';});}}";
+    html += "item.style.display=(status==-1||itemStatus==status)?'flex':'none';});";
+    html += "updateFilteredTileCounts();}";
 
     html += "function filterTrailer(trailerStatus){";
     html += "if(activeTrailerFilter==trailerStatus){activeTrailerFilter=-1;trailerStatus=-1;}else{activeTrailerFilter=trailerStatus;}";
-    html += "document.querySelectorAll('.items-container').forEach(container=>{";
-    html += "container.querySelectorAll('.item').forEach(item=>{";
+    html += "document.querySelectorAll('.inv-category .item').forEach(item=>{";
     html += "let itemTrailer=parseInt(item.getAttribute('data-trailer'));";
     html += "let shouldShow=true;";
     html += "if(trailerStatus==-1)shouldShow=true;";
     html += "else if(trailerStatus==1)shouldShow=(itemTrailer==1);";
     html += "else if(trailerStatus==0)shouldShow=(itemTrailer==0);";
-    html += "item.style.display=shouldShow?'flex':'none';});});}";
+    html += "item.style.display=shouldShow?'flex':'none';});";
+    html += "updateFilteredTileCounts();}";
+
+    html += "function updateFilteredTileCounts(){";
+    html += "let okCount=0,lowCount=0,outCount=0;";
+    html += "document.querySelectorAll('.inv-category .item').forEach(item=>{";
+    html += "if(item.style.display!=='none'){";
+    html += "let status=parseInt(item.getAttribute('data-status'));";
+    html += "if(status<=0)okCount++;";
+    html += "else if(status==1)lowCount++;";
+    html += "else if(status==2)outCount++;}});";
+    html += "let cards=document.querySelectorAll('.summary-card .value');";
+    html += "if(cards[0])cards[0].textContent=okCount;";
+    html += "if(cards[1])cards[1].textContent=lowCount;";
+    html += "if(cards[2])cards[2].textContent=outCount;}";
+
+    html += "let currentLocationFilter='all';";
+    html += "let currentStatusFilter='all';";
+
+    html += "function applyLocationFilter(filter){";
+    html += "currentLocationFilter=filter;";
+    html += "document.querySelectorAll('#loc-all,#loc-trailer,#loc-trip').forEach(btn=>btn.classList.remove('active'));";
+    html += "document.getElementById('loc-'+filter).classList.add('active');";
+    html += "applyAllFilters();}";
+
+    html += "function applyStatusFilter(filter){";
+    html += "currentStatusFilter=filter;";
+    html += "document.querySelectorAll('#status-all,#status-ok,#status-low,#status-out').forEach(btn=>btn.classList.remove('active'));";
+    html += "document.getElementById('status-'+filter).classList.add('active');";
+    html += "applyAllFilters();}";
+
+    html += "function applyAllFilters(){";
+    html += "document.querySelectorAll('.inv-category .item').forEach(item=>{";
+    html += "let shouldShow=true;";
+    html += "if(currentLocationFilter!=='all'){";
+    html += "let itemTrailer=parseInt(item.getAttribute('data-trailer'));";
+    html += "if(currentLocationFilter==='trailer'&&itemTrailer!==1)shouldShow=false;";
+    html += "if(currentLocationFilter==='trip'&&itemTrailer!==0)shouldShow=false;}";
+    html += "if(currentStatusFilter!=='all'&&shouldShow){";
+    html += "let itemStatus=parseInt(item.getAttribute('data-status'));";
+    html += "if(currentStatusFilter==='ok'&&itemStatus>0)shouldShow=false;";
+    html += "if(currentStatusFilter==='low'&&itemStatus!==1)shouldShow=false;";
+    html += "if(currentStatusFilter==='out'&&itemStatus!==2)shouldShow=false;}";
+    html += "item.style.display=shouldShow?'flex':'none';});";
+    html += "updateFilteredTileCounts();}";
+
+    html += "function clearAllFilters(){";
+    html += "currentLocationFilter='all';";
+    html += "currentStatusFilter='all';";
+    html += "document.querySelectorAll('.filter-btn').forEach(btn=>btn.classList.remove('active'));";
+    html += "document.getElementById('loc-all').classList.add('active');";
+    html += "document.getElementById('status-all').classList.add('active');";
+    html += "applyAllFilters();}";
 
     html += "function filterEquipment(type,showCompleted){";
     html += "if(activeEquipmentFilter==type){activeEquipmentFilter=-1;type=-1;}else{activeEquipmentFilter=type;}";
@@ -1729,8 +1832,61 @@ void handleInventory() {
     html += "item.style.display=shouldShow?'flex':'none';});});}";
 
     html += "function resetAll(){";
-    html += "if(!confirm('Reset ALL consumable items to Full? This cannot be undone.'))return;";
-    html += "fetch('/inventory/resetall').then(r=>r.ok?location.reload():alert('Reset failed'));}";
+    html += "let filteredCount=document.querySelectorAll('.inv-category .item:not([style*=\"display: none\"])').length;";
+    html += "let totalCount=document.querySelectorAll('.inv-category .item').length;";
+    html += "let filterText=filteredCount===totalCount?'ALL consumable items':'visible filtered items ('+filteredCount+' of '+totalCount+')';";
+    html += "if(!confirm('Reset '+filterText+' to Full? This cannot be undone.'))return;";
+    html += "let visibleItems=[];";
+    html += "document.querySelectorAll('.inv-category .item:not([style*=\"display: none\"])').forEach(item=>{";
+    html += "let catIndex=item.closest('.inv-category').getAttribute('data-category-index');";
+    html += "let itemIndex=item.getAttribute('data-item-index');";
+    html += "if(catIndex!==null&&itemIndex!==null)visibleItems.push({cat:catIndex,item:itemIndex});});";
+    html += "if(visibleItems.length===0){alert('No visible items to reset');return;}";
+    html += "let payload=JSON.stringify({items:visibleItems});";
+    html += "console.log('Sending reset payload:',payload);";
+    html += "fetch('/inventory/resetall',{method:'POST',headers:{'Content-Type':'application/json'},body:payload}).then(r=>{";
+    html += "console.log('Reset response:',r.status,r.ok);";
+    html += "if(r.ok){let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Reset failed');}});}";
+
+    html += "let shoppingLocationFilter='all';";
+    html += "let shoppingStatusFilter='all';";
+    
+    html += "function applyShoppingLocationFilter(filter){";
+    html += "shoppingLocationFilter=filter;";
+    html += "document.querySelectorAll('[id^=\"shop-loc-\"]').forEach(btn=>btn.classList.remove('active'));";
+    html += "document.getElementById('shop-loc-'+filter).classList.add('active');";
+    html += "applyAllShoppingFilters();}";
+    
+    html += "function applyShoppingStatusFilter(filter){";
+    html += "shoppingStatusFilter=filter;";
+    html += "document.querySelectorAll('[id^=\"shop-status-\"]').forEach(btn=>btn.classList.remove('active'));";
+    html += "document.getElementById('shop-status-'+filter).classList.add('active');";
+    html += "applyAllShoppingFilters();}";
+    
+    html += "function applyAllShoppingFilters(){";
+    html += "document.querySelectorAll('.shop-item').forEach(item=>{";
+    html += "let trailerAttr=item.getAttribute('data-trailer');";
+    html += "let statusAttr=item.getAttribute('data-status');";
+    html += "console.log('Item status attr:',statusAttr,'trailer:',trailerAttr);";
+    html += "let locationMatch=shoppingLocationFilter=='all'||(shoppingLocationFilter=='trailer'&&trailerAttr=='true')||(shoppingLocationFilter=='trip'&&trailerAttr=='false');";
+    html += "let statusMatch=shoppingStatusFilter=='all'||(shoppingStatusFilter=='low'&&statusAttr=='1')||(shoppingStatusFilter=='out'&&statusAttr=='2');";
+    html += "item.style.display=(locationMatch&&statusMatch)?'flex':'none';});";
+    html += "updateShoppingTileCounts();}";
+    
+    html += "function updateShoppingTileCounts(){";
+    html += "let visibleLow=0,visibleOut=0;";
+    html += "document.querySelectorAll('.shop-item').forEach(item=>{";
+    html += "if(item.style.display=='none')return;";
+    html += "let status=parseInt(item.getAttribute('data-status'));";
+    html += "if(status==1)visibleLow++;";
+    html += "else if(status==2)visibleOut++;});";
+    html += "let countEl=document.getElementById('shop-count');";
+    html += "if(countEl){";
+    html += "let html='';";
+    html += "if(visibleOut>0){html+='<span style=\"color:#ef4444\">'+visibleOut+' OUT</span>';}";
+    html += "if(visibleLow>0){if(html)html+=' + ';html+='<span style=\"color:#f59e0b\">'+visibleLow+' LOW</span>';}";
+    html += "if(visibleOut==0&&visibleLow==0)html='0 items';";
+    html += "countEl.innerHTML=html;}}";
 
     html += "function filterShoppingTrailer(mode){";
     html += "document.querySelectorAll('.shop-item').forEach(item=>{";
@@ -1738,23 +1894,32 @@ void handleInventory() {
     html += "let shouldShow=mode=='all'||(mode=='trailer'&&trailerAttr=='true')||(mode=='trip'&&trailerAttr=='false');";
     html += "item.style.display=shouldShow?'flex':'none';});";
     html += "document.querySelectorAll('[id^=\"shopping-filter-\"]').forEach(btn=>btn.style.background='rgba(255,255,255,0.1)');";
-    html += "document.getElementById('shopping-filter-'+mode).style.background='rgba(255,255,255,0.3)';}";
+    html += "document.getElementById('shopping-filter-'+mode).style.background='rgba(255,255,255,0.3)';";
+    html += "updateShoppingTileCounts();}";
 
     html += "function selectItems(mode){";
     html += "let checkboxes=document.querySelectorAll('.shop-check');";
-    html += "console.log('Found '+checkboxes.length+' checkboxes, mode='+mode);";
+    html += "let visibleCount=0,selectedCount=0;";
     html += "checkboxes.forEach(cb=>{";
     html += "let item=cb.closest('.shop-item');";
-    html += "if(!item){console.log('No item found');return;}";
+    html += "if(!item)return;";
+    html += "if(item.style.display=='none'){cb.checked=false;return;}";
+    html += "visibleCount++;";
     html += "let status=parseInt(item.getAttribute('data-status'));";
-    html += "let trailer=parseInt(item.getAttribute('data-trailer')||'0');";
-    html += "console.log('Item status: '+status+', trailer: '+trailer);";
-    html += "if(mode=='all'){cb.checked=true;}";
-    html += "else if(mode=='none'){cb.checked=false;}";
-    html += "else if(mode=='out'){cb.checked=(status==2);}"; // STATUS_OUT = 2
-    html += "else if(mode=='low'){cb.checked=(status==1);}"; // STATUS_LOW = 1
-    html += "else if(mode=='trailer'){cb.checked=(trailer==1);}";
-    html += "else if(mode=='trip'){cb.checked=(trailer==0);}});}";           html += "function markRestocked(){";
+    html += "let trailerAttr=item.getAttribute('data-trailer')||'false';";
+    html += "let isTrailer=(trailerAttr=='true');";
+    html += "console.log('SelectItems mode:'+mode+', status:'+status+', checking: low='+(status==1)+', out='+(status==2));";
+    html += "let shouldSelect=false;";
+    html += "if(mode=='all'){shouldSelect=true;}";
+    html += "else if(mode=='none'){shouldSelect=false;}";
+    html += "else if(mode=='out'){shouldSelect=(status==2);}";
+    html += "else if(mode=='low'){shouldSelect=(status==1);}";
+    html += "else if(mode=='trailer'){shouldSelect=isTrailer;}";
+    html += "else if(mode=='trip'){shouldSelect=!isTrailer;}";
+    html += "cb.checked=shouldSelect;";
+    html += "if(shouldSelect)selectedCount++;});}";
+
+    html += "function markRestocked(){";
     html += "let selected=[];";
     html += "document.querySelectorAll('.shop-check:checked').forEach(cb=>{";
     html += "let item=cb.closest('.shop-item');";
@@ -1778,6 +1943,30 @@ void handleInventory() {
     html += "function downloadList(){";
     html += "window.location.href='/inventory/download';}";
 
+    html += "function copyFilteredList(){";
+    html += "let items=[];";
+    html += "document.querySelectorAll('.shop-item').forEach(el=>{";
+    html += "if(el.style.display=='none')return;";
+    html += "let nameEl=el.querySelector('div>div');";
+    html += "if(nameEl)items.push('\u{2022} '+nameEl.textContent);});";
+    html += "if(items.length==0){alert('No visible items to copy');return;}";
+    html += "let txt=items.join('\\n');";
+    html += "if(navigator.clipboard&&navigator.clipboard.writeText){";
+    html += "navigator.clipboard.writeText(txt).then(()=>{alert('\u{2713} Copied '+items.length+' filtered items to clipboard!');},()=>{";
+    html += "prompt('Copy this filtered list:',txt);});}else{prompt('Copy this filtered list:',txt);}}";
+
+    html += "function markAllFilteredRestocked(){";
+    html += "let visibleItems=[];";
+    html += "document.querySelectorAll('.shop-item').forEach(item=>{";
+    html += "if(item.style.display=='none')return;";
+    html += "visibleItems.push({cat:item.getAttribute('data-cat'),item:item.getAttribute('data-item')});});";
+    html += "if(visibleItems.length==0){alert('No visible items to restock');return;}";
+    html += "let filterText=shoppingLocationFilter=='all'?'':' ('+shoppingLocationFilter+' items)';";
+    html += "filterText+=shoppingStatusFilter=='all'?'':' ('+shoppingStatusFilter+' status)';";
+    html += "if(!confirm('Mark ALL '+visibleItems.length+' visible item(s)'+filterText+' as Full?'))return;";
+    html += "fetch('/inventory/restock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(visibleItems)})";
+    html += ".then(r=>{if(r.ok){let msg=document.createElement('div');msg.textContent='✅ '+visibleItems.length+' filtered item(s) restocked!';msg.style.cssText='position:fixed;top:20px;right:20px;background:#22c55e;color:white;padding:10px 15px;border-radius:5px;z-index:9999;font-weight:bold';document.body.appendChild(msg);setTimeout(()=>msg.remove(),3000);refreshShoppingList();}else{alert('Bulk restock failed');}});}";
+
     html += "function addItem(cat){";
     html += "let name=prompt('Enter item name:');";
     html += "if(!name||name.trim()=='')return;";
@@ -1786,13 +1975,183 @@ void handleInventory() {
     html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
     html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Failed to add item');}});}";
 
-    html += "function editItem(cat,item){";
-    html += "let newName=prompt('Enter new name:');";
+    html += "function editItem(cat,item,isConsumable,currentName,currentTrailer){";
+    html += "if(isConsumable){";
+    html += "editingCategory=cat;";
+    html += "editingIndex=item;";
+    html += "let modal=document.createElement('div');";
+    html += "modal.id='editModal';";
+    html += "modal.style='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000';";
+    html += "let modalContent=document.createElement('div');";
+    html += "modalContent.style='background:#222;padding:20px;border-radius:10px;width:90%;max-width:400px;color:#fff';";
+    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Edit Item</h3>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Item Name:</label>';";
+    html += "modalContent.innerHTML+='<input type=\"text\" id=\"edit-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Location:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"edit-trailer\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Category:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"edit-category\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
+    html += "modalContent.innerHTML+='<div style=\"display:flex;gap:10px;justify-content:flex-end\">';";
+    html += "modalContent.innerHTML+='<button onclick=\"closeEditModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"deleteItemFromModal()\" style=\"padding:8px 16px;background:#ef4444;border:none;border-radius:4px;color:#fff;cursor:pointer\">Delete Item</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"saveItemEdit()\" style=\"padding:8px 16px;background:#4af;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Save Changes</button>';";
+    html += "modalContent.innerHTML+='</div>';";
+    html += "modal.appendChild(modalContent);";
+    html += "modal.onclick=(e)=>{if(e.target===modal)closeEditModal();};";
+    html += "document.body.appendChild(modal);";
+    html += "let trailerSelect=document.getElementById('edit-trailer');";
+    html += "trailerSelect.innerHTML='<option value=\"true\">🚚 Lives in Trailer</option><option value=\"false\">🛒 Buy Each Trip</option>';";
+    html += "trailerSelect.value=currentTrailer?'true':'false';";
+    html += "let categorySelect=document.getElementById('edit-category');";
+    html += "categorySelect.innerHTML='';";
+    html += "document.querySelectorAll('.cat-title').forEach((catEl,idx)=>{";
+    html += "let catText=catEl.textContent.trim();";
+    html += "let countEl=catEl.querySelector('.cat-count');";
+    html += "if(countEl){catText=catText.replace(countEl.textContent,'').trim();}";
+    html += "let option=document.createElement('option');";
+    html += "option.value=idx;";
+    html += "option.textContent=catText;";
+    html += "if(idx=='+cat+')option.selected=true;";
+    html += "categorySelect.appendChild(option);});";
+    html += "document.getElementById('edit-name').value=currentName;";
+    html += "document.getElementById('edit-name').focus();";
+    html += "}else{";
+    html += "let newName=prompt('Enter new name:',currentName);";
     html += "if(!newName||newName.trim()=='')return;";
     html += "fetch('/inventory/edit?cat='+cat+'&item='+item+'&name='+encodeURIComponent(newName)).then(r=>{";
     html += "if(r.ok){let currentTab=document.querySelector('.tab.active');";
     html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
-    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Edit failed');}});}";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Edit failed');}});}}";
+
+    html += "function closeEditModal(){";
+    html += "let modal=document.getElementById('editModal');";
+    html += "if(modal){modal.remove();return;}";
+    html += "modal=document.querySelector('[style*=\"position:fixed\"]');";
+    html += "if(modal)modal.remove();}";
+
+    html += "function showAddConsumableModal(){";
+    html += "let modal=document.createElement('div');";
+    html += "modal.id='addModal';";
+    html += "modal.style='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000';";
+    html += "let modalContent=document.createElement('div');";
+    html += "modalContent.style='background:#222;padding:20px;border-radius:10px;width:90%;max-width:400px;color:#fff';";
+    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Add Consumable Item</h3>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Item Name:</label>';";
+    html += "modalContent.innerHTML+='<input type=\"text\" id=\"add-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\" placeholder=\"Enter item name\"></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Location:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"add-trailer\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"><option value=\"false\">🛒 Buy Each Trip</option><option value=\"true\">🚚 Lives in Trailer</option></select></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Category:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"add-category\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
+    html += "modalContent.innerHTML+='<div style=\"display:flex;gap:10px;justify-content:flex-end\">';";
+    html += "modalContent.innerHTML+='<button onclick=\"closeAddModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"saveNewConsumable()\" style=\"padding:8px 16px;background:#22c55e;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Add Item</button>';";
+    html += "modalContent.innerHTML+='</div>';";
+    html += "modal.appendChild(modalContent);";
+    html += "modal.onclick=(e)=>{if(e.target===modal)closeAddModal();};";
+    html += "document.body.appendChild(modal);";
+    html += "document.querySelectorAll('.cat-title').forEach((catEl,idx)=>{";
+    html += "let catText=catEl.textContent.trim();";
+    html += "let countEl=catEl.querySelector('.cat-count');";
+    html += "if(countEl){catText=catText.replace(countEl.textContent,'').trim();}";
+    html += "let option=document.createElement('option');";
+    html += "option.value=idx;";
+    html += "option.textContent=catText;";
+    html += "document.getElementById('add-category').appendChild(option);});";
+    html += "document.getElementById('add-name').focus();}";
+
+    html += "function showAddEquipmentModal(){";
+    html += "let modal=document.createElement('div');";
+    html += "modal.id='addModal';";
+    html += "modal.style='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000';";
+    html += "let modalContent=document.createElement('div');";
+    html += "modalContent.style='background:#222;padding:20px;border-radius:10px;width:90%;max-width:400px;color:#fff';";
+    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Add Equipment Item</h3>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Item Name:</label>';";
+    html += "modalContent.innerHTML+='<input type=\"text\" id=\"add-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\" placeholder=\"Enter item name\"></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Category:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"add-category\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
+    html += "modalContent.innerHTML+='<div style=\"display:flex;gap:10px;justify-content:flex-end\">';";
+    html += "modalContent.innerHTML+='<button onclick=\"closeAddModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"saveNewEquipment()\" style=\"padding:8px 16px;background:#22c55e;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Add Item</button>';";
+    html += "modalContent.innerHTML+='</div>';";
+    html += "modal.appendChild(modalContent);";
+    html += "modal.onclick=(e)=>{if(e.target===modal)closeAddModal();};";
+    html += "document.body.appendChild(modal);";
+    html += "document.querySelectorAll('.cat-title').forEach((catEl,idx)=>{";
+    html += "let catText=catEl.textContent.trim();";
+    html += "let countEl=catEl.querySelector('.cat-count');";
+    html += "if(countEl){catText=catText.replace(countEl.textContent,'').trim();}";
+    html += "let option=document.createElement('option');";
+    html += "option.value=idx;";
+    html += "option.textContent=catText;";
+    html += "document.getElementById('add-category').appendChild(option);});";
+    html += "document.getElementById('add-name').focus();}";
+
+    html += "function closeAddModal(){";
+    html += "let modal=document.getElementById('addModal');";
+    html += "if(modal){modal.remove();return;}";
+    html += "modal=document.querySelector('[style*=\"position:fixed\"]');";
+    html += "if(modal)modal.remove();}";
+
+    html += "function saveNewConsumable(){";
+    html += "let name=document.getElementById('add-name').value.trim();";
+    html += "let category=parseInt(document.getElementById('add-category').value);";
+    html += "let trailer=document.getElementById('add-trailer').value;";
+    html += "if(!name){alert('Name cannot be empty');return;}";
+    html += "let params='cat='+category+'&name='+encodeURIComponent(name)+'&livesInTrailer='+trailer;";
+    html += "fetch('/inventory/add?'+params).then(r=>{";
+    html += "if(r.ok){closeAddModal();";
+    html += "let currentTab=document.querySelector('.tab.active');";
+    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Failed to add item');}});}";
+    
+    html += "function saveNewEquipment(){";
+    html += "let name=document.getElementById('add-name').value.trim();";
+    html += "let category=parseInt(document.getElementById('add-category').value);";
+    html += "if(!name){alert('Name cannot be empty');return;}";
+    html += "let params='cat='+category+'&name='+encodeURIComponent(name);";
+    html += "fetch('/inventory/add?'+params).then(r=>{";
+    html += "if(r.ok){closeAddModal();";
+    html += "let currentTab=document.querySelector('.tab.active');";
+    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Failed to add item');}});}";;
+    
+    html += "function deleteItemFromModal(){";
+    html += "if(confirm('Delete this item? This cannot be undone.')){";
+    html += "fetch('/inventory/remove?cat='+editingCategory+'&item='+editingIndex).then(r=>{";
+    html += "if(r.ok){closeEditModal();";
+    html += "let currentTab=document.querySelector('.tab.active');";
+    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Delete failed');}});}}";
+    
+    html += "function saveItemEdit(){";
+    html += "let name=document.getElementById('edit-name').value.trim();";
+    html += "let trailer=document.getElementById('edit-trailer').value==='true';";
+    html += "let newCategory=parseInt(document.getElementById('edit-category').value);";
+    html += "if(!name){alert('Name cannot be empty');return;}";
+    html += "if(newCategory!==editingCategory){";
+    html += "let editParams='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name)+'&livesInTrailer='+(trailer?'true':'false');";
+    html += "fetch('/inventory/edit-consumable?'+editParams).then(r=>{";
+    html += "if(r.ok){";
+    html += "let moveParams='cat='+editingCategory+'&item='+editingIndex+'&target='+newCategory;";
+    html += "return fetch('/inventory/move-item',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:moveParams});";
+    html += "}else{throw new Error('Edit failed');}";
+    html += "}).then(r=>{";
+    html += "if(r.ok){closeEditModal();";
+    html += "let currentTab=document.querySelector('.tab.active');";
+    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
+    html += "setTimeout(()=>showTab(tabIndex),100);}";
+    html += "else{alert('Error moving item to new category');}";
+    html += "}).catch(e=>{alert('Error: '+e.message);});";
+    html += "}else{";
+    html += "let params='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name)+'&livesInTrailer='+(trailer?'true':'false');";
+    html += "fetch('/inventory/edit-consumable?'+params).then(r=>{";
+    html += "if(r.ok){closeEditModal();";
+    html += "let currentTab=document.querySelector('.tab.active');";
+    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Edit failed');}});";
+    html += "}";
+    html += "}";
 
     html += "function removeItem(cat,item){";
     html += "if(!confirm('Delete this item? This cannot be undone.'))return;";
@@ -1830,15 +2189,16 @@ void handleInventory() {
     html += "html+='<button onclick=\"selectItems(\\'trip\\')\" style=\"padding:6px 12px;background:rgba(255,107,53,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">🛒 Trip Items</button>';";
     html += "html+='<button onclick=\"selectItems(\\'none\\')\" style=\"padding:6px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Deselect All</button></div>';";
     html += "data.items.forEach(item=>{";
-    html += "let statusClass=item.status==2?'low':'out';";
-    html += "let badge=item.status==2?'LOW':'OUT';";
+    html += "let statusClass=item.status==2?'out':'low';";
+    html += "let badge=item.status==2?'OUT':'LOW';";
     html += "html+='<div class=\"shop-item '+statusClass+'\" data-cat=\"'+item.cat+'\" data-item=\"'+item.item+'\" data-status=\"'+item.status+'\" data-trailer=\"'+item.livesInTrailer+'\">';";
     html += "html+='<input type=\"checkbox\" class=\"shop-check\" style=\"width:18px;height:18px;margin-right:10px;cursor:pointer\">';";
     html += "html+='<span style=\"margin-right:8px;font-size:14px\">'+(item.livesInTrailer?'🚚':'🛒')+'</span>';";
     html += "html+='<div style=\"flex:1\"><div style=\"font-weight:bold;margin-bottom:2px\">'+item.name+'</div>';";
     html += "html+='<div style=\"font-size:13px;opacity:0.8\">'+item.category+'</div></div>';";
     html += "html+='<span class=\"badge '+statusClass+'\">'+badge+'</span></div>';});";
-    html += "container.innerHTML=html;container.classList.add('expanded');}});}";
+    html += "container.innerHTML=html;container.classList.add('expanded');";
+    html += "setTimeout(updateShoppingTileCounts,100);}});}";
 
     // Add Category Dialog Functions
     html += "function showAddCategoryDialog(isConsumable){";
@@ -1987,14 +2347,74 @@ void handleInventorySave() {
 }
 
 void handleInventoryResetAll() {
-    for (size_t i = 0; i < inventory.size(); i++) {
-        if (!inventory[i].isConsumable) continue;
-        for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
-            inventory[i].consumables[j].status = STATUS_FULL;
+    int reset = 0;
+    
+    // Check if request has JSON body (filtered items)
+    if (server.method() == HTTP_POST && server.hasArg("plain")) {
+        String body = server.arg("plain");
+        Serial.printf("[INVENTORY] Reset filtered items body: %s\n", body.c_str());
+        
+        // Simple JSON parsing for {items:[{cat:0,item:1},{cat:0,item:2}]}
+        int itemsStart = body.indexOf("\"items\":[");
+        if (itemsStart >= 0) {
+            itemsStart += 9; // Skip "items":["
+            int itemsEnd = body.indexOf(']', itemsStart);
+            if (itemsEnd > itemsStart) {
+                String itemsStr = body.substring(itemsStart, itemsEnd);
+                Serial.printf("[INVENTORY] Items string: %s\n", itemsStr.c_str());
+                
+                // Parse each {cat:X,item:Y} object
+                int pos = 0;
+                while (pos < itemsStr.length()) {
+                    int objStart = itemsStr.indexOf('{', pos);
+                    if (objStart < 0) break;
+                    int objEnd = itemsStr.indexOf('}', objStart);
+                    if (objEnd < 0) break;
+                    
+                    String obj = itemsStr.substring(objStart, objEnd + 1);
+                    Serial.printf("[INVENTORY] Processing object: %s\n", obj.c_str());
+                    
+                    // Extract cat and item numbers
+                    int catPos = obj.indexOf("\"cat\":");
+                    int itemPos = obj.indexOf("\"item\":");
+                    if (catPos >= 0 && itemPos >= 0) {
+                        int catStart = catPos + 7; // Skip "cat":" and opening quote
+                        int catEnd = obj.indexOf('"', catStart); // Find closing quote
+                        
+                        int itemStart = itemPos + 8; // Skip "item":" and opening quote
+                        int itemEnd = obj.indexOf('"', itemStart); // Find closing quote
+                        
+                        int catNum = obj.substring(catStart, catEnd).toInt();
+                        int itemNum = obj.substring(itemStart, itemEnd).toInt();
+                        
+                        Serial.printf("[INVENTORY] Parsed cat:%d, item:%d\n", catNum, itemNum);
+                        
+                        if (catNum < inventory.size() && inventory[catNum].isConsumable && 
+                            itemNum < inventory[catNum].consumables.size()) {
+                            inventory[catNum].consumables[itemNum].status = STATUS_FULL;
+                            reset++;
+                            Serial.printf("[INVENTORY] Set item to FULL: cat:%d, item:%d\n", catNum, itemNum);
+                        }
+                    }
+                    
+                    pos = objEnd + 1;
+                }
+            }
         }
+        Serial.printf("[INVENTORY] Reset %d filtered items to Full\n", reset);
+    } else {
+        // Fallback: reset all consumables (old behavior)
+        for (size_t i = 0; i < inventory.size(); i++) {
+            if (!inventory[i].isConsumable) continue;
+            for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
+                inventory[i].consumables[j].status = STATUS_FULL;
+                reset++;
+            }
+        }
+        Serial.printf("[INVENTORY] Reset all %d consumables to Full\n", reset);
     }
-    Serial.println("[INVENTORY] Reset all to Full");
-    saveInventoryToSPIFFS();  // Auto-save after reset all
+    
+    saveInventoryToSPIFFS();  // Auto-save after reset
     server.send(200, "text/plain", "OK");
 }
 
@@ -2337,6 +2757,20 @@ void handleInventoryImportCSV() {
     // Clear existing inventory
     inventory.clear();
     
+    // Detect separator from header line
+    char separator = ',';
+    int firstLineEnd = csvData.indexOf('\n');
+    if (firstLineEnd > 0) {
+        String headerLine = csvData.substring(0, firstLineEnd);
+        int commas = 0, semicolons = 0;
+        for (int i = 0; i < headerLine.length(); i++) {
+            if (headerLine.charAt(i) == ',') commas++;
+            else if (headerLine.charAt(i) == ';') semicolons++;
+        }
+        separator = (semicolons > commas) ? ';' : ',';
+        Serial.printf("[CSV] Detected separator: '%c' (commas: %d, semicolons: %d)\n", separator, commas, semicolons);
+    }
+    
     // Parse CSV line by line
     int lineNum = 0;
     int startPos = 0;
@@ -2350,17 +2784,17 @@ void handleInventoryImportCSV() {
         line.trim();
         
         if (lineNum > 0 && line.length() > 0) { // Skip header and empty lines
-            // Parse CSV line - simple comma splitting (should handle quoted fields better in production)
+            // Parse CSV line - using detected separator
             std::vector<String> fields;
             int fieldStart = 0;
             bool inQuotes = false;
             
             for (int i = 0; i <= line.length(); i++) {
-                char c = (i < line.length()) ? line.charAt(i) : ',';
+                char c = (i < line.length()) ? line.charAt(i) : separator;
                 
                 if (c == '"') {
                     inQuotes = !inQuotes;
-                } else if (c == ',' && !inQuotes) {
+                } else if (c == separator && !inQuotes) {
                     String field = line.substring(fieldStart, i);
                     field.trim();
                     if (field.startsWith("\"") && field.endsWith("\"")) {
@@ -2622,6 +3056,46 @@ void handleInventoryRenameItem() {
     }
 
     server.send(400, "text/plain", "Invalid parameters");
+}
+
+void handleInventoryEditConsumable() {
+    if (!server.hasArg("cat") || !server.hasArg("item") || !server.hasArg("name") || !server.hasArg("livesInTrailer")) {
+        server.send(400, "text/plain", "Missing parameters");
+        return;
+    }
+
+    int cat = server.arg("cat").toInt();
+    int item = server.arg("item").toInt();
+    String newName = server.arg("name");
+    bool livesInTrailer = (server.arg("livesInTrailer") == "true");
+    newName.trim();
+
+    if (newName.length() == 0 || newName.length() > 100) {
+        server.send(400, "text/plain", "Invalid item name");
+        return;
+    }
+
+    if (cat >= 0 && cat < (int)inventory.size() && item >= 0) {
+        if (inventory[cat].isConsumable && item < (int)inventory[cat].consumables.size()) {
+            String oldName = inventory[cat].consumables[item].name;
+            bool oldTrailer = inventory[cat].consumables[item].livesInTrailer;
+            
+            inventory[cat].consumables[item].name = newName;
+            inventory[cat].consumables[item].livesInTrailer = livesInTrailer;
+            
+            Serial.printf("[INVENTORY] Updated consumable '%s' to '%s', livesInTrailer: %s->%s in category %d\n", 
+                         oldName.c_str(), newName.c_str(), 
+                         oldTrailer ? "true" : "false", 
+                         livesInTrailer ? "true" : "false", cat);
+            
+            sortCategoryItems(inventory[cat]);  // Re-sort after edit
+            saveInventoryToSPIFFS();  // Auto-save on edit
+            server.send(200, "text/plain", "OK");
+            return;
+        }
+    }
+
+    server.send(400, "text/plain", "Invalid parameters or not a consumable item");
 }
 
 void handleInventoryMoveItem() {
@@ -3603,6 +4077,71 @@ void handleInventoryClearAll() {
             }
         }
         Serial.printf("[INVENTORY] Cleared all Trailer - %d items reset\n", cleared);
+    } else if (type == "consumables") {
+        // Check if request has JSON body (filtered items)
+        if (server.method() == HTTP_POST && server.hasArg("plain")) {
+            String body = server.arg("plain");
+            Serial.printf("[INVENTORY] Clear filtered items body: %s\n", body.c_str());
+            
+            // Simple JSON parsing for {items:[{cat:0,item:1},{cat:0,item:2}]}
+            int itemsStart = body.indexOf("\"items\":[");
+            if (itemsStart >= 0) {
+                itemsStart += 9; // Skip "items":["
+                int itemsEnd = body.indexOf(']', itemsStart);
+                if (itemsEnd > itemsStart) {
+                    String itemsStr = body.substring(itemsStart, itemsEnd);
+                    Serial.printf("[INVENTORY] Items string: %s\n", itemsStr.c_str());
+                    
+                    // Parse each {cat:X,item:Y} object
+                    int pos = 0;
+                    while (pos < itemsStr.length()) {
+                        int objStart = itemsStr.indexOf('{', pos);
+                        if (objStart < 0) break;
+                        int objEnd = itemsStr.indexOf('}', objStart);
+                        if (objEnd < 0) break;
+                        
+                        String obj = itemsStr.substring(objStart, objEnd + 1);
+                        Serial.printf("[INVENTORY] Processing object: %s\n", obj.c_str());
+                        
+                        // Extract cat and item numbers
+                        int catPos = obj.indexOf("\"cat\":");
+                        int itemPos = obj.indexOf("\"item\":");
+                        if (catPos >= 0 && itemPos >= 0) {
+                            int catStart = catPos + 7; // Skip "cat":" and opening quote
+                            int catEnd = obj.indexOf('"', catStart); // Find closing quote
+                            
+                            int itemStart = itemPos + 8; // Skip "item":" and opening quote
+                            int itemEnd = obj.indexOf('"', itemStart); // Find closing quote
+                            
+                            int catNum = obj.substring(catStart, catEnd).toInt();
+                            int itemNum = obj.substring(itemStart, itemEnd).toInt();
+                            
+                            Serial.printf("[INVENTORY] Parsed cat:%d, item:%d\n", catNum, itemNum);
+                            
+                            if (catNum < inventory.size() && inventory[catNum].isConsumable && 
+                                itemNum < inventory[catNum].consumables.size()) {
+                                inventory[catNum].consumables[itemNum].status = STATUS_OUT;
+                                cleared++;
+                                Serial.printf("[INVENTORY] Set item to OUT: cat:%d, item:%d\n", catNum, itemNum);
+                            }
+                        }
+                        
+                        pos = objEnd + 1;
+                    }
+                }
+            }
+            Serial.printf("[INVENTORY] Cleared %d filtered consumables to OUT\n", cleared);
+        } else {
+            // Fallback: clear all consumables (old behavior)
+            for (size_t i = 0; i < inventory.size(); i++) {
+                if (!inventory[i].isConsumable) continue;
+                for (size_t j = 0; j < inventory[i].consumables.size(); j++) {
+                    inventory[i].consumables[j].status = STATUS_OUT;
+                    cleared++;
+                }
+            }
+            Serial.printf("[INVENTORY] Cleared all Consumables - %d items set to OUT\n", cleared);
+        }
     } else {
         server.send(400, "text/plain", "Invalid type parameter");
         return;
@@ -3832,6 +4371,7 @@ void setup() {
     server.on("/inventory/reload", handleInventoryReload);
     server.on("/inventory/fix-tabs", handleInventoryFixTabs); // Emergency fix for tab assignments
     server.on("/inventory/edit", handleInventoryRenameItem);  // Alias for edit
+    server.on("/inventory/edit-consumable", handleInventoryEditConsumable);  // Edit consumable name and trailer status
     server.on("/inventory/clearall", handleInventoryClearAll);
     server.on("/inventory/rename", handleInventoryRenameItem);  // Item rename
     server.on("/inventory/delete", handleInventoryDeleteItem);  // Item delete  
