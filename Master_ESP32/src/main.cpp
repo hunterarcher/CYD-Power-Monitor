@@ -63,6 +63,7 @@ void handleInventoryMoveItem();
 void handleInventoryDeleteItem();
 void handleCategoryRename();
 void handleCategoryDelete();
+void handleMonitor();
 String createStyledConfirmationPage(String title, String icon, String message, String buttonText, String buttonUrl, String buttonColor = "primary");
 
 // ============ CONFIGURATION ============
@@ -281,11 +282,93 @@ void handleRoot() {
     html += ".c{margin:6px 0;padding:10px}";
     html += "}";
 
+    // Alert notification bar styles
+    html += ".alert-bar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:8px 15px;text-align:center;";
+    html += "font-size:0.9em;font-weight:600;transform:translateY(-100%);transition:transform 0.5s ease;cursor:pointer}";
+    html += ".alert-bar.show{transform:translateY(0)}";
+    html += ".alert-bar.normal{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}";
+    html += ".alert-bar.caution{background:linear-gradient(135deg,#eab308,#ca8a04);color:#000}";
+    html += ".alert-bar.warning{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff}";
+    html += ".alert-bar.critical{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;animation:pulse-alert 2s infinite}";
+    html += "@keyframes pulse-alert{0%,100%{opacity:1}50%{opacity:0.8}}";
+    html += "body.alert-active{padding-top:40px}";  // Add padding when alert is shown
+    
     html += "</style>";
     html += "<script>";
     html += "if('serviceWorker' in navigator){";
     html += "navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed'));";
     html += "}";
+    
+    // Alert notification JavaScript
+    html += "function showAlert(type,message,duration=3000){";
+    html += "let bar=document.getElementById('alertBar');";
+    html += "if(!bar){bar=document.createElement('div');bar.id='alertBar';bar.className='alert-bar';document.body.appendChild(bar);}";
+    html += "bar.className='alert-bar '+type;bar.innerHTML=message;";
+    html += "document.body.classList.add('alert-active');";
+    html += "setTimeout(()=>bar.classList.add('show'),100);";
+    html += "if(type==='normal'){setTimeout(()=>{bar.classList.remove('show');";
+    html += "setTimeout(()=>document.body.classList.remove('alert-active'),500);},duration);}";
+    html += "bar.onclick=()=>{if(type!=='normal')window.location.href='/monitor';};";
+    html += "}";
+    
+    html += "window.onload=function(){";
+    html += "let isNavigation=!document.referrer||document.referrer.indexOf(window.location.origin)==-1||";
+    html += "document.referrer.indexOf('/monitor')>-1||document.referrer.indexOf('/fridge')>-1||document.referrer.indexOf('/inventory')>-1;";
+    html += "if(!isNavigation)return;";  // Skip alert on refresh
+    
+    // Determine system status and show appropriate alert
+    uint32_t freeHeap = ESP.getFreeHeap();
+    bool batteryHealthy = true;
+    
+    // Check battery health
+    if (dataRecent && latestData.bmv.valid) {
+        float soc = latestData.bmv.soc;
+        int ttg = latestData.bmv.timeToGo;
+        batteryHealthy = !(soc <= 20 || (ttg > 0 && ttg <= 60));
+    }
+    
+    // Generate alert message and type - Only show alerts for problems or first navigation
+    String alertType = "";
+    String alertMessage = "";
+    
+    if (!dataRecent) {
+        alertType = "critical";
+        alertMessage = "⚠ Data Connection Lost - Click for Details";
+    }
+    else if (freeHeap < 20000) {
+        alertType = "critical";
+        alertMessage = "⚠ Critical: Low Memory (" + String(freeHeap/1024) + "KB) - Click for Details";
+    }
+    else if (freeHeap < 40000) {
+        alertType = "warning";
+        alertMessage = "⚠ Warning: Memory Low (" + String(freeHeap/1024) + "KB) - Click for Details";
+    }
+    else if (freeHeap < 60000) {
+        alertType = "caution";
+        alertMessage = "⚡ Caution: Monitor Memory (" + String(freeHeap/1024) + "KB) - Click for Details";
+    }
+    else if (!batteryHealthy) {
+        if (dataRecent && latestData.bmv.valid) {
+            float soc = latestData.bmv.soc;
+            if (soc <= 10) {
+                alertType = "critical";
+                alertMessage = "🔋 Critical: Battery " + String(soc,0) + "% - Immediate Attention Required";
+            }
+            else if (soc <= 20) {
+                alertType = "warning";
+                alertMessage = "🔋 Warning: Battery " + String(soc,0) + "% - Low Power";
+            }
+        }
+    }
+    else {
+        // Only show "All Systems Normal" on first navigation
+        alertType = "normal";
+        alertMessage = "✓ All Systems Normal";
+    }
+    
+    html += "if('" + alertType + "')showAlert('" + alertType + "','" + alertMessage + "');";
+    html += "};";
+    
     html += "</script>";
     html += "<meta http-equiv='refresh' content='5'>";  // Auto-refresh every 5 seconds
     html += "</head><body>";
@@ -514,9 +597,10 @@ void handleRoot() {
     html += "</div>";
 
     // Navigation buttons
-    html += "<div style='margin-top:15px;display:flex;gap:8px'>";
-    html += "<div onclick=\"window.location.href='/fridge'\" style='flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:10px;text-align:center;color:#fff;font-weight:600;cursor:pointer'>\u{1F9CA} Fridge</div>";
-    html += "<div onclick=\"window.location.href='/inventory'\" style='flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:10px;text-align:center;color:#fff;font-weight:600;cursor:pointer'>\u{1F69A} Inventory</div>";
+    html += "<div style='margin-top:15px;display:flex;gap:6px'>";
+    html += "<div onclick=\"window.location.href='/fridge'\" style='flex:1;padding:10px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;text-align:center;color:#fff;font-weight:600;cursor:pointer;font-size:0.9em'>\u{1F9CA} Fridge</div>";
+    html += "<div onclick=\"window.location.href='/monitor'\" style='flex:1;padding:10px;background:linear-gradient(135deg,#4facfe,#00f2fe);border-radius:8px;text-align:center;color:#fff;font-weight:600;cursor:pointer;font-size:0.9em'>\u{1F4CA} Monitor</div>";
+    html += "<div onclick=\"window.location.href='/inventory'\" style='flex:1;padding:10px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;text-align:center;color:#fff;font-weight:600;cursor:pointer;font-size:0.9em'>\u{1F69A} Inventory</div>";
     html += "</div>";
 
     // Footer
@@ -4266,6 +4350,167 @@ void smartBackupCleanup(unsigned long currentDay) {
     }
 }
 
+void handleMonitor() {
+    // Get system information
+    uint32_t freeHeap = ESP.getFreeHeap();
+    uint32_t heapSize = ESP.getHeapSize();
+    uint32_t maxAllocHeap = ESP.getMaxAllocHeap();
+    uint32_t freeSketchSpace = ESP.getFreeSketchSpace();
+    uint32_t chipRev = ESP.getChipRevision();
+    uint32_t cpuFreq = ESP.getCpuFreqMHz();
+    unsigned long uptime = millis() / 1000;
+    
+    // Calculate memory usage percentage
+    float heapUsage = ((float)(heapSize - freeHeap) / heapSize) * 100;
+    
+    // Determine alert level and status
+    String alertLevel = "Normal";
+    String alertColor = "#4ade80";
+    String statusIndicator = "●";
+    if (freeHeap < 20000) { 
+        alertLevel = "Critical"; 
+        alertColor = "#ef4444"; 
+    }
+    else if (freeHeap < 40000) { 
+        alertLevel = "Warning"; 
+        alertColor = "#f97316"; 
+    }
+    else if (freeHeap < 60000) { 
+        alertLevel = "Caution"; 
+        alertColor = "#eab308"; 
+    }
+
+    String html = "<!DOCTYPE html><html><head>";
+    html += "<meta charset='UTF-8'>";
+    html += "<meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'>";
+    html += "<title>System Monitor - Trailer Dashboard</title>";
+    
+    // Use the same styling as main dashboard
+    html += "<style>";
+    html += "*{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}";
+    html += "body{background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;margin:0;padding:8px;line-height:1.3;font-size:15px}";
+
+    // Same card styling as main dashboard
+    html += ".c{background:linear-gradient(135deg,#1a1a1a 0%,#111 100%);margin:8px 0;padding:10px;border-radius:12px;border-left:3px solid #333;box-shadow:0 4px 6px rgba(0,0,0,0.3);position:relative}";
+    html += ".c.online{border-left-color:#4f4;box-shadow:0 4px 6px rgba(79,244,79,0.2)}";
+    html += ".c.warn{border-left-color:#f80;box-shadow:0 4px 6px rgba(255,136,0,0.2)}";
+    html += ".c.critical{border-left-color:#f22;box-shadow:0 4px 6px rgba(255,34,34,0.2)}";
+
+    // Headers with icons - same as main dashboard
+    html += "h2{margin:0 0 6px;font-size:1.05em;color:#ddd;display:flex;align-items:center;gap:8px;font-weight:600}";
+    html += ".icon{font-size:1.3em;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))}";
+
+    // Main values with gradient backgrounds
+    html += ".v{font-size:1.5em;font-weight:bold;margin:4px 0;line-height:1;padding:5px 8px;border-radius:8px;display:inline-block;background:linear-gradient(135deg,#4f4,#2d2);color:#000;box-shadow:0 2px 4px rgba(79,244,79,0.3)}";
+    html += ".v.warn{background:linear-gradient(135deg,#f80,#d60);color:#000;box-shadow:0 2px 4px rgba(255,136,0,0.3)}";
+    html += ".v.critical{background:linear-gradient(135deg,#f22,#d00);color:#fff;box-shadow:0 2px 4px rgba(255,34,34,0.3)}";
+
+    // Grid layout for metrics - same as main dashboard
+    html += ".content{display:flex;gap:15px;align-items:center}";
+    html += ".grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:0.95em;flex:1}";
+    html += ".item{display:flex;flex-direction:column}";
+    html += ".label{color:#999;font-size:0.8em;margin-bottom:2px;font-weight:500}";
+    html += ".value{color:#fff;font-size:1.05em;font-weight:500}";
+
+    // Navigation back button
+    html += ".nav-back{display:inline-block;margin-bottom:10px;padding:8px 16px;background:linear-gradient(135deg,#4facfe,#00f2fe);";
+    html += "border-radius:8px;color:#fff;text-decoration:none;font-size:0.9em;font-weight:600}";
+
+    // Navigation buttons (same as main page)
+    html += ".nav-buttons{margin-top:15px;display:flex;gap:6px}";
+    html += ".nav-btn{flex:1;padding:10px;border-radius:8px;text-align:center;color:#fff;font-weight:600;cursor:pointer;font-size:0.9em}";
+    html += ".nav-btn.fridge{background:linear-gradient(135deg,#667eea,#764ba2)}";
+    html += ".nav-btn.monitor{background:linear-gradient(135deg,#4facfe,#00f2fe)}";
+    html += ".nav-btn.inventory{background:linear-gradient(135deg,#667eea,#764ba2)}";
+
+    // Refresh button - smaller and in corner like dashboard
+    html += ".refresh-btn{position:fixed;bottom:15px;right:15px;width:40px;height:40px;";
+    html += "border-radius:20px;background:linear-gradient(135deg,#4facfe,#00f2fe);border:none;color:#fff;font-size:1em;cursor:pointer;";
+    html += "box-shadow:0 4px 8px rgba(0,0,0,0.3)}";
+
+    // Tablet/iPad optimization - same as main dashboard
+    html += "@media(min-width:768px){";
+    html += "body{padding:10px 15px;max-width:1200px;margin:0 auto;font-size:16px}";
+    html += ".c{margin:8px 0;padding:12px;border-radius:12px;border-left-width:4px}";
+    html += "h2{font-size:1.15em;margin-bottom:6px}";
+    html += ".v{font-size:2em;padding:6px 12px}";
+    html += ".nav-btn{padding:14px!important;font-size:1.1em!important}";
+    html += "}";
+    
+    html += "</style>";
+    html += "<meta http-equiv='refresh' content='5'>";
+    html += "</head><body>";
+    
+    // Memory Status Card (same style as main dashboard cards)
+    String cardClass = "c";
+    if (freeHeap < 20000) cardClass += " critical";
+    else if (freeHeap < 60000) cardClass += " warn";
+    else cardClass += " online";
+    
+    html += "<div class='" + cardClass + "'>";
+    html += "<h2><span class='icon'>\u{1F4CA}</span>SYSTEM MONITOR<span style='background:#444;padding:2px 6px;border-radius:6px;font-size:0.68em;color:#aaa;margin-left:5px'>ESP32</span></h2>";
+    
+    html += "<div class='content'>";
+    
+    // Main memory value (same style as dashboard)
+    String valueClass = "v";
+    if (freeHeap < 20000) valueClass += " critical";
+    else if (freeHeap < 60000) valueClass += " warn";
+    html += "<div class='" + valueClass + "'>" + String(freeHeap / 1024) + " KB</div>";
+    
+    // Grid with system metrics
+    html += "<div class='grid'>";
+    html += "<div class='item'><div class='label'>Memory Used</div><div class='value'>" + String(heapUsage, 1) + "%</div></div>";
+    
+    int hours = uptime / 3600;
+    int minutes = (uptime % 3600) / 60;
+    html += "<div class='item'><div class='label'>Uptime</div><div class='value'>" + String(hours) + "h " + String(minutes) + "m</div></div>";
+    
+    bool dataRecent = (millis() - lastReceived) < 60000;
+    html += "<div class='item'><div class='label'>Data Status</div><div class='value' style='color:" + String(dataRecent ? "#4f4" : "#f22") + "'>";
+    html += String(dataRecent ? "Active" : "Stale") + "</div></div>";
+    
+    html += "<div class='item'><div class='label'>ESP32 Packets</div><div class='value'>" + String(packetsReceived) + "</div></div>";
+    html += "</div></div></div>";
+    
+    // System Details Card
+    html += "<div class='c'>";
+    html += "<h2><span class='icon'>\u{2699}\u{FE0F}</span>SYSTEM INFO</h2>";
+    html += "<div class='content'>";
+    html += "<div class='v' style='background:linear-gradient(135deg,#4facfe,#00f2fe);color:#000'>" + String(cpuFreq) + " MHz</div>";
+    
+    html += "<div class='grid'>";
+    html += "<div class='item'><div class='label'>Chip Rev</div><div class='value'>v" + String(chipRev) + "</div></div>";
+    html += "<div class='item'><div class='label'>Max Alloc</div><div class='value'>" + String(maxAllocHeap / 1024) + " KB</div></div>";
+    html += "<div class='item'><div class='label'>Alert Level</div><div class='value' style='color:" + alertColor + "'>" + alertLevel + "</div></div>";
+    html += "<div class='item'><div class='label'>Free Flash</div><div class='value'>" + String(freeSketchSpace / 1024) + " KB</div></div>";
+    html += "</div></div></div>";
+    
+    // Navigation buttons - change to Dashboard, Fridge, Inventory
+    html += "<div class='nav-buttons'>";
+    html += "<div class='nav-btn fridge' onclick=\"window.location.href='/'\">\u{1F3E0} Dashboard</div>";
+    html += "<div class='nav-btn fridge' onclick=\"window.location.href='/fridge'\">\u{1F9CA} Fridge</div>";
+    html += "<div class='nav-btn inventory' onclick=\"window.location.href='/inventory'\">\u{1F69A} Inventory</div>";
+    html += "</div>";
+
+    // Footer (same as main dashboard)
+    html += "<div style='margin-top:10px;padding:6px;background:#111;border-radius:4px;font-size:0.7em;color:#666;text-align:center'>";
+    unsigned long secondsAgo = (millis() - lastReceived) / 1000;
+    html += "Memory: " + String(freeHeap / 1024) + "KB free | ";
+    if (secondsAgo < 60) {
+        html += "Updated " + String(secondsAgo) + "s ago";
+    } else {
+        html += "Updated " + String(secondsAgo / 60) + "m ago";
+    }
+    html += "</div>";
+    
+    // Refresh button (smaller, in corner)
+    html += "<button class='refresh-btn' onclick='location.reload()'>↻</button>";
+    
+    html += "</body></html>";
+    server.send(200, "text/html", html);
+}
+
 // ============ SETUP ============
 void setup() {
     Serial.begin(115200);
@@ -4340,6 +4585,7 @@ void setup() {
     server.on("/", handleRoot);
     server.on("/test", handleTest);
     server.on("/fridge", handleFridge);
+    server.on("/monitor", handleMonitor);
     server.on("/fridge/cmd", handleFridgeCommand);
     server.on("/fridge/eco", handleFridgeEco);
     server.on("/fridge/battery", handleFridgeBattery);
