@@ -1114,7 +1114,7 @@ void handleTabContent() {
         for (size_t i = 0; i < inventory.size(); i++) {
             if (inventory[i].isConsumable || inventory[i].subcategory != SUBCATEGORY_TRAILER) continue;
             
-            html += "<div class='c'>";
+            html += "<div class='c' data-category-index='" + String(i) + "'>";
             html += "<div class='cat-header'>";
             html += "<div class='cat-title' onclick='toggleCat(" + String(i) + ")'>" + inventory[i].icon + " " + inventory[i].name + "<div class='cat-count'>" + String(inventory[i].equipment.size()) + "</div></div>";
             html += "<div class='cat-controls'>";
@@ -1129,7 +1129,7 @@ void handleTabContent() {
                 html += String("<button class='status-btn checked") + (inventory[i].equipment[j].checked ? " active" : "") + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"checked\",2)'>Checked</button>";
                 html += String("<button class='status-btn packed") + (inventory[i].equipment[j].packed ? " active" : "") + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"packed\",2)'>Packed</button>";
                 html += "</div>";
-                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\",false,false)' title='Options'>⋮</button>";
+                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='editItem(" + String(i) + "," + String(j) + ",false,\"" + inventory[i].equipment[j].name + "\"," + String(inventory[i].equipment[j].livesInTrailer ? "true" : "false") + ")' title='Edit'>✏️</button>";
                 html += "</div>";
             }
             html += "</div></div>";
@@ -1171,7 +1171,7 @@ void handleTabContent() {
         for (size_t i = 0; i < inventory.size(); i++) {
             if (inventory[i].isConsumable || inventory[i].subcategory != SUBCATEGORY_ESSENTIALS) continue;
             
-            html += "<div class='c'>";
+            html += "<div class='c' data-category-index='" + String(i) + "'>";
             html += "<div class='cat-header'>";
             html += "<div class='cat-title' onclick='toggleCat(" + String(i) + ")'>" + inventory[i].icon + " " + inventory[i].name + "<div class='cat-count'>" + String(inventory[i].equipment.size()) + "</div></div>";
             html += "<div class='cat-controls'>";
@@ -1186,7 +1186,7 @@ void handleTabContent() {
                 html += String("<button class='status-btn checked") + (inventory[i].equipment[j].checked ? " active" : "") + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"checked\",3)'>Checked</button>";
                 html += String("<button class='status-btn packed") + (inventory[i].equipment[j].packed ? " active" : "") + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"packed\",3)'>Packed</button>";
                 html += "</div>";
-                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\",false,false)' title='Options'>⋮</button>";
+                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='editItem(" + String(i) + "," + String(j) + ",false,\"" + inventory[i].equipment[j].name + "\"," + String(inventory[i].equipment[j].livesInTrailer ? "true" : "false") + ")' title='Edit'>✏️</button>";
                 html += "</div>";
             }
             html += "</div></div>";
@@ -1230,7 +1230,7 @@ void handleTabContent() {
         for (size_t i = 0; i < inventory.size(); i++) {
             if (inventory[i].isConsumable || inventory[i].subcategory != SUBCATEGORY_OPTIONAL) continue;
             
-            html += "<div class='c'>";
+            html += "<div class='c' data-category-index='" + String(i) + "'>";
             html += "<div class='cat-header'>";
             html += "<div class='cat-title' onclick='toggleCat(" + String(i) + ")'>" + inventory[i].icon + " " + inventory[i].name + "<div class='cat-count'>" + String(inventory[i].equipment.size()) + "</div></div>";
             html += "<div class='cat-controls'>";
@@ -1247,7 +1247,7 @@ void handleTabContent() {
                 html += String("<button class='status-btn checked") + (inventory[i].equipment[j].checked && inventory[i].equipment[j].taking ? " active" : "") + disabledClass + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"checked\",4)'>Checked</button>";
                 html += String("<button class='status-btn packed") + (inventory[i].equipment[j].packed && inventory[i].equipment[j].taking ? " active" : "") + disabledClass + "' onclick='toggleEquipmentStatus(" + String(i) + "," + String(j) + ",\"packed\",4)'>Packed</button>";
                 html += "</div>";
-                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='showItemOptions(" + String(i) + "," + String(j) + ",\"" + inventory[i].equipment[j].name + "\",false,false)' title='Options'>⋮</button>";
+                html += "<button class='status-btn' style='background:#6b7280;margin-left:8px' onclick='editItem(" + String(i) + "," + String(j) + ",false,\"" + inventory[i].equipment[j].name + "\"," + String(inventory[i].equipment[j].livesInTrailer ? "true" : "false") + ")' title='Edit'>✏️</button>";
                 html += "</div>";
             }
             html += "</div></div>";
@@ -1414,6 +1414,8 @@ void handleInventory() {
     html += ".items-container.expanded{max-height:3000px}";
     html += ".expand-icon{transition:transform 0.3s}";
     html += ".expanded .expand-icon{transform:rotate(180deg)}";
+    html += "@media (max-width: 1024px){.items-container,.expand-icon{transition:none}}";
+    html += ".no-transition,.no-transition *{transition:none !important}";
     html += ".action-btns{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap}";
     html += ".action-btn{flex:1;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;min-width:120px}";
     html += ".action-btn.primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}";
@@ -1639,6 +1641,182 @@ void handleInventory() {
     html += "<script>";
     html += "let editingCategory=-1;";
     html += "let editingIndex=-1;";
+    html += "let editingIsConsumable=false;";
+    html += "function closeEditModal(){";
+    html += "let modal=document.getElementById('editModal');";
+    html += "if(modal){modal.remove();return;}";
+    html += "modal=document.querySelector('[style*=\"position:fixed\"]');";
+    html += "if(modal)modal.remove();}";
+    
+    html += "function closeAddModal(){";
+    html += "let modal=document.getElementById('addModal');";
+    html += "if(modal){modal.remove();return;}";
+    html += "modal=document.querySelector('[style*=\"position:fixed\"]');";
+    html += "if(modal)modal.remove();}";
+    
+    html += "function deleteItemFromModal(){";
+    html += "if(confirm('Delete this item? This cannot be undone.')){";
+    html += "fetch('/inventory/remove?cat='+editingCategory+'&item='+editingIndex).then(r=>{";
+    html += "if(r.ok){closeEditModal();";
+    html += "let currentTab=document.querySelector('.tab.active');";
+    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Delete failed');}});}}";
+    
+    html += "function saveItemEdit(){";
+    html += "let name=document.getElementById('edit-name').value.trim();";
+    html += "let newCategory=parseInt(document.getElementById('edit-category').value);";
+    html += "if(!name){alert('Name cannot be empty');return;}";
+    html += "if(editingIsConsumable){";
+    html += "let trailer=document.getElementById('edit-trailer').value==='true';";
+    html += "if(newCategory!==editingCategory){";
+    html += "let editParams='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name)+'&livesInTrailer='+(trailer?'true':'false');";
+    html += "fetch('/inventory/edit-consumable?'+editParams).then(r=>{";
+    html += "if(r.ok){let moveParams='cat='+editingCategory+'&item='+editingIndex+'&target='+newCategory;return fetch('/inventory/move-item',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:moveParams});}else{throw new Error('Edit failed');}";
+    html += "}).then(r=>{if(r.ok){closeEditModal();let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Error moving item to new category');}}).catch(e=>{alert('Error: '+e.message);});";
+    html += "}else{";
+    html += "let params='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name)+'&livesInTrailer='+(trailer?'true':'false');";
+    html += "fetch('/inventory/edit-consumable?'+params).then(r=>{if(r.ok){closeEditModal();let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Edit failed');}});";
+    html += "}";
+    html += "}else{";
+    html += "if(newCategory!==editingCategory){";
+    html += "let editParams='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name);";
+    html += "fetch('/inventory/rename?'+editParams).then(r=>{if(r.ok){let moveParams='cat='+editingCategory+'&item='+editingIndex+'&target='+newCategory;return fetch('/inventory/move-item',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:moveParams});}else{throw new Error('Rename failed');}}).then(r=>{if(r.ok){closeEditModal();let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Error moving item to new category');}}).catch(e=>{alert('Error: '+e.message);});";
+    html += "}else{";
+    html += "let params='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name);";
+    html += "fetch('/inventory/rename?'+params).then(r=>{if(r.ok){closeEditModal();let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Rename failed');}});";
+    html += "}";
+    html += "}";
+    html += "}";
+    
+    html += "function saveNewConsumable(){";
+    html += "let name=document.getElementById('add-name').value.trim();";
+    html += "let category=parseInt(document.getElementById('add-category').value);";
+    html += "let trailer=document.getElementById('add-trailer').value;";
+    html += "if(!name){alert('Name cannot be empty');return;}";
+    html += "let params='cat='+category+'&name='+encodeURIComponent(name)+'&livesInTrailer='+trailer;";
+    html += "fetch('/inventory/add?'+params).then(async r=>{";
+    html += "if(r.ok){closeAddModal();";
+    html += "let currentTab=document.querySelector('.tab.active');";
+    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{let t=await r.text();alert('Failed to add item: '+t);}});}";
+    
+    html += "function saveNewEquipment(){";
+    html += "let name=document.getElementById('add-name').value.trim();";
+    html += "let category=parseInt(document.getElementById('add-category').value);";
+    html += "if(!name){alert('Name cannot be empty');return;}";
+    html += "let params='cat='+category+'&name='+encodeURIComponent(name);";
+    html += "fetch('/inventory/add?'+params).then(async r=>{";
+    html += "if(r.ok){closeAddModal();";
+    html += "let currentTab=document.querySelector('.tab.active');";
+    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{let t=await r.text();alert('Failed to add item: '+t);}});}";
+    
+    html += "function showAddConsumableModal(){";
+    html += "let modal=document.createElement('div');";
+    html += "modal.id='addModal';";
+    html += "modal.style='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000';";
+    html += "let modalContent=document.createElement('div');";
+    html += "modalContent.style='background:#222;padding:20px;border-radius:10px;width:90%;max-width:400px;color:#fff';";
+    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Add Consumable Item</h3>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Item Name:</label>';";
+    html += "modalContent.innerHTML+='<input type=\"text\" id=\"add-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\" placeholder=\"Enter item name\"></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Location:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"add-trailer\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"><option value=\"false\">🛒 Buy Each Trip</option><option value=\"true\">🚚 Lives in Trailer</option></select></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Category:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"add-category\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
+    html += "modalContent.innerHTML+='<div style=\"display:flex;gap:10px;justify-content:flex-end\">';";
+    html += "modalContent.innerHTML+='<button onclick=\"closeAddModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"saveNewConsumable()\" style=\"padding:8px 16px;background:#22c55e;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Add Item</button>';";
+    html += "modalContent.innerHTML+='</div>';";
+    html += "modal.appendChild(modalContent);";
+    html += "modal.onclick=(e)=>{if(e.target===modal)closeAddModal();};";
+    html += "document.body.appendChild(modal);";
+    html += "document.querySelectorAll('.cat-title').forEach((catEl,idx)=>{";
+    html += "let catText=catEl.textContent.trim();";
+    html += "let countEl=catEl.querySelector('.cat-count');";
+    html += "if(countEl){catText=catText.replace(countEl.textContent,'').trim();}";
+    html += "let option=document.createElement('option');";
+    html += "let parent=catEl.closest('[data-category-index]')||catEl.closest('.c');";
+    html += "let realIdx=(parent && parent.getAttribute('data-category-index')!==null)?parent.getAttribute('data-category-index'):idx;";
+    html += "option.value=realIdx;";
+    html += "option.textContent=catText;";
+    html += "document.getElementById('add-category').appendChild(option);});";
+    html += "document.getElementById('add-name').focus();}";
+    html += "function showAddEquipmentModal(){";
+    html += "let modal=document.createElement('div');";
+    html += "modal.id='addModal';";
+    html += "modal.style='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000';";
+    html += "let modalContent=document.createElement('div');";
+    html += "modalContent.style='background:#222;padding:20px;border-radius:10px;width:90%;max-width:400px;color:#fff';";
+    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Add Equipment Item</h3>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Item Name:</label>';";
+    html += "modalContent.innerHTML+='<input type=\"text\" id=\"add-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\" placeholder=\"Enter item name\"></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Category:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"add-category\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
+    html += "modalContent.innerHTML+='<div style=\"display:flex;gap:10px;justify-content:flex-end\">';";
+    html += "modalContent.innerHTML+='<button onclick=\"closeAddModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"saveNewEquipment()\" style=\"padding:8px 16px;background:#22c55e;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Add Item</button>';";
+    html += "modalContent.innerHTML+='</div>';";
+    html += "modal.appendChild(modalContent);";
+    html += "modal.onclick=(e)=>{if(e.target===modal)closeAddModal();};";
+    html += "document.body.appendChild(modal);";
+    html += "document.querySelectorAll('.cat-title').forEach((catEl,idx)=>{";
+    html += "let catText=catEl.textContent.trim();";
+    html += "let countEl=catEl.querySelector('.cat-count');";
+    html += "if(countEl){catText=catText.replace(countEl.textContent,'').trim();}";
+    html += "let option=document.createElement('option');";
+    html += "let parent=catEl.closest('[data-category-index]')||catEl.closest('.c');";
+    html += "let realIdx=(parent && parent.getAttribute('data-category-index')!==null)?parent.getAttribute('data-category-index'):idx;";
+    html += "option.value=realIdx;";
+    html += "option.textContent=catText;";
+    html += "document.getElementById('add-category').appendChild(option);});";
+    html += "document.getElementById('add-name').focus();}";
+    html += "function showAddCategoryDialog(isConsumable){";
+    html += "let modal=document.createElement('div');";
+    html += "modal.id='addCategoryModal';";
+    html += "modal.style='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000';";
+    html += "let modalContent=document.createElement('div');";
+    html += "modalContent.style='background:#222;padding:20px;border-radius:10px;width:90%;max-width:400px;color:#fff';";
+    html += "let typeLabel=isConsumable?'Consumable':'Equipment';";
+    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Add '+typeLabel+' Category</h3>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Category Name:</label>';";
+    html += "modalContent.innerHTML+='<input type=\"text\" id=\"category-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\" placeholder=\"Enter category name\"></div>';";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Icon:</label>';";
+    html += "modalContent.innerHTML+='<input type=\"text\" id=\"category-icon\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\" placeholder=\"📦\" value=\"📦\"></div>';";
+    html += "if(!isConsumable){";
+    html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Trailer Category:</label>';";
+    html += "modalContent.innerHTML+='<select id=\"category-subtype\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\">';";
+    html += "modalContent.innerHTML+='<option value=\"trailer\">🚚 TRAILER - Always packed items</option>';";
+    html += "modalContent.innerHTML+='<option value=\"essentials\">⭐ ESSENTIALS - Must pack every trip</option>';";
+    html += "modalContent.innerHTML+='<option value=\"optional\">🎒 OPTIONAL - Extra items</option>';";
+    html += "modalContent.innerHTML+='</select></div>';}";
+    html += "modalContent.innerHTML+='<div style=\"display:flex;gap:10px;justify-content:flex-end\">';";
+    html += "modalContent.innerHTML+='<button onclick=\"closeAddCategoryModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"saveNewCategory('+isConsumable+')\" style=\"padding:8px 16px;background:#22c55e;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Add Category</button>';";
+    html += "modalContent.innerHTML+='</div>';";
+    html += "modal.appendChild(modalContent);";
+    html += "modal.onclick=(e)=>{if(e.target===modal)closeAddCategoryModal();};";
+    html += "document.body.appendChild(modal);";
+    html += "document.getElementById('category-name').focus();}";
+
+    html += "function closeAddCategoryModal(){";
+    html += "let modal=document.getElementById('addCategoryModal');";
+    html += "if(modal)modal.remove();}";
+
+    html += "function saveNewCategory(isConsumable){";
+    html += "let name=document.getElementById('category-name').value.trim();";
+    html += "let icon=document.getElementById('category-icon').value.trim();";
+    html += "if(!name){alert('Category name cannot be empty');return;}";
+    html += "if(!icon)icon='📦';";
+    html += "if(name.length>50){alert('Category name too long (max 50 chars)');return;}";
+    html += "if(icon.length>10){alert('Icon too long (max 10 chars)');return;}";
+    html += "let type=isConsumable?'consumable':'equipment';";
+    html += "let url='/inventory/add-category?name='+encodeURIComponent(name)+'&type='+type+'&icon='+encodeURIComponent(icon);";
+    html += "if(!isConsumable){";
+    html += "let subcategory=document.getElementById('category-subtype').value;";
+    html += "url+='&subcategory='+subcategory;}";
+    html += "fetch(url).then(r=>{if(r.ok){closeAddCategoryModal();alert('✅ Category \"'+name+'\" created!');let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);loadTabContent(tabIndex);}";
+    html += "else{r.text().then(msg=>{closeAddCategoryModal();alert('❌ Error: '+msg);});}});}"; 
     html += "function showTab(n){";
     html += "document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i==n));";
     html += "let mainTab=document.getElementById('tab0');";
@@ -1649,11 +1827,13 @@ void handleInventory() {
     html += "}else{";
     html += "mainTab.style.display='none';";
     html += "dynamicContent.style.display='block';";
+    html += "dynamicContent.classList.add('no-transition');";
     html += "fetch('/inventory?tab='+n).then(r=>r.text()).then(html=>{";
     html += "dynamicContent.innerHTML=html;";
+    html += "setTimeout(()=>{dynamicContent.classList.remove('no-transition');},50);";
     html += "if(n==5)refreshShoppingList();});";
     html += "}}";
-    
+    html += "function loadTabContent(tab){showTab(tab);}";
     html += "function toggleCat(id){";
     html += "let el=document.getElementById('cat'+id);";
     html += "let hdr=el.previousElementSibling;";
@@ -1830,7 +2010,7 @@ void handleInventory() {
     html += "livesInTrailer=confirm('Does this item live in the trailer?\\n\\nYES = Stays in trailer (🚚)\\nNO = Buy each trip (🛒)')?'true':'false';";
     html += "}";
     html += "fetch('/inventory/additem?cat=' + categoryNum + '&name=' + encodeURIComponent(name) + '&subcategory=' + subcategory + '&livesInTrailer=' + livesInTrailer)";
-    html += ".then(r=>{if(r.ok){loadTabContent(currentTab);}else{alert('Add failed');}});}";
+    html += ".then(async r=>{if(r.ok){let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);loadTabContent(tabIndex);}else{let t=await r.text();alert('Add failed: '+t);}});}";
 
     html += "let activeFilter=-1;";
     html += "let activeEquipmentFilter=-1;";
@@ -2070,6 +2250,9 @@ void handleInventory() {
     html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Failed to add item');}});}";
 
     html += "function editItem(cat,item,isConsumable,currentName,currentTrailer){";
+    html += "editingCategory=cat;";
+    html += "editingIndex=item;";
+    html += "editingIsConsumable=isConsumable;";
     html += "if(isConsumable){";
     html += "editingCategory=cat;";
     html += "editingIndex=item;";
@@ -2103,89 +2286,52 @@ void handleInventory() {
     html += "let countEl=catEl.querySelector('.cat-count');";
     html += "if(countEl){catText=catText.replace(countEl.textContent,'').trim();}";
     html += "let option=document.createElement('option');";
-    html += "option.value=idx;";
+    html += "let parent=catEl.closest('[data-category-index]')||catEl.closest('.c');";
+    html += "let realIdx=(parent && parent.getAttribute('data-category-index')!==null)?parent.getAttribute('data-category-index'):idx;";
+    html += "option.value=realIdx;";
     html += "option.textContent=catText;";
-    html += "if(idx=='+cat+')option.selected=true;";
+    // Fixing the undefined 'cat' variable by replacing it with 'editingCategory', which is defined earlier in the code.
+    html += "if(String(realIdx)==String(editingCategory))option.selected=true;";
     html += "categorySelect.appendChild(option);});";
     html += "document.getElementById('edit-name').value=currentName;";
     html += "document.getElementById('edit-name').focus();";
     html += "}else{";
-    html += "let newName=prompt('Enter new name:',currentName);";
-    html += "if(!newName||newName.trim()=='')return;";
-    html += "fetch('/inventory/edit?cat='+cat+'&item='+item+'&name='+encodeURIComponent(newName)).then(r=>{";
-    html += "if(r.ok){let currentTab=document.querySelector('.tab.active');";
-    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
-    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Edit failed');}});}}";
-
-    html += "function closeEditModal(){";
-    html += "let modal=document.getElementById('editModal');";
-    html += "if(modal){modal.remove();return;}";
-    html += "modal=document.querySelector('[style*=\"position:fixed\"]');";
-    html += "if(modal)modal.remove();}";
-
-    html += "function showAddConsumableModal(){";
+    html += "editingCategory=cat;editingIndex=item;editingIsConsumable=false;";
     html += "let modal=document.createElement('div');";
-    html += "modal.id='addModal';";
+    html += "modal.id='editModal';";
     html += "modal.style='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000';";
     html += "let modalContent=document.createElement('div');";
     html += "modalContent.style='background:#222;padding:20px;border-radius:10px;width:90%;max-width:400px;color:#fff';";
-    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Add Consumable Item</h3>';";
+    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Edit Item</h3>';";
     html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Item Name:</label>';";
-    html += "modalContent.innerHTML+='<input type=\"text\" id=\"add-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\" placeholder=\"Enter item name\"></div>';";
-    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Location:</label>';";
-    html += "modalContent.innerHTML+='<select id=\"add-trailer\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"><option value=\"false\">🛒 Buy Each Trip</option><option value=\"true\">🚚 Lives in Trailer</option></select></div>';";
+    html += "modalContent.innerHTML+='<input type=\"text\" id=\"edit-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\">';";
+    html += "modalContent.innerHTML+='</div>';";
     html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Category:</label>';";
-    html += "modalContent.innerHTML+='<select id=\"add-category\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
+    html += "modalContent.innerHTML+='<select id=\"edit-category\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
     html += "modalContent.innerHTML+='<div style=\"display:flex;gap:10px;justify-content:flex-end\">';";
-    html += "modalContent.innerHTML+='<button onclick=\"closeAddModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
-    html += "modalContent.innerHTML+='<button onclick=\"saveNewConsumable()\" style=\"padding:8px 16px;background:#22c55e;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Add Item</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"closeEditModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"deleteItemFromModal()\" style=\"padding:8px 16px;background:#ef4444;border:none;border-radius:4px;color:#fff;cursor:pointer\">Delete Item</button>';";
+    html += "modalContent.innerHTML+='<button onclick=\"saveItemEdit()\" style=\"padding:8px 16px;background:#4af;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Save Changes</button>';";
     html += "modalContent.innerHTML+='</div>';";
     html += "modal.appendChild(modalContent);";
-    html += "modal.onclick=(e)=>{if(e.target===modal)closeAddModal();};";
+    html += "modal.onclick=(e)=>{if(e.target===modal)closeEditModal();};";
     html += "document.body.appendChild(modal);";
+    html += "let categorySelect=document.getElementById('edit-category');";
+    html += "categorySelect.innerHTML='';";
     html += "document.querySelectorAll('.cat-title').forEach((catEl,idx)=>{";
     html += "let catText=catEl.textContent.trim();";
     html += "let countEl=catEl.querySelector('.cat-count');";
     html += "if(countEl){catText=catText.replace(countEl.textContent,'').trim();}";
     html += "let option=document.createElement('option');";
-    html += "option.value=idx;";
+    html += "let parent=catEl.closest('[data-category-index]')||catEl.closest('.c');";
+    html += "let realIdx=(parent && parent.getAttribute('data-category-index')!==null)?parent.getAttribute('data-category-index'):idx;";
+    html += "option.value=realIdx;";
     html += "option.textContent=catText;";
-    html += "document.getElementById('add-category').appendChild(option);});";
-    html += "document.getElementById('add-name').focus();}";
-
-    html += "function showAddEquipmentModal(){";
-    html += "let modal=document.createElement('div');";
-    html += "modal.id='addModal';";
-    html += "modal.style='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:1000';";
-    html += "let modalContent=document.createElement('div');";
-    html += "modalContent.style='background:#222;padding:20px;border-radius:10px;width:90%;max-width:400px;color:#fff';";
-    html += "modalContent.innerHTML='<h3 style=\"margin:0 0 15px 0\">Add Equipment Item</h3>';";
-    html += "modalContent.innerHTML+='<div style=\"margin-bottom:15px\"><label style=\"display:block;margin-bottom:5px\">Item Name:</label>';";
-    html += "modalContent.innerHTML+='<input type=\"text\" id=\"add-name\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\" placeholder=\"Enter item name\"></div>';";
-    html += "modalContent.innerHTML+='<div style=\"margin-bottom:20px\"><label style=\"display:block;margin-bottom:5px\">Category:</label>';";
-    html += "modalContent.innerHTML+='<select id=\"add-category\" style=\"width:100%;padding:8px;border:1px solid #444;background:#333;color:#fff;border-radius:4px\"></select></div>';";
-    html += "modalContent.innerHTML+='<div style=\"display:flex;gap:10px;justify-content:flex-end\">';";
-    html += "modalContent.innerHTML+='<button onclick=\"closeAddModal()\" style=\"padding:8px 16px;background:#666;border:none;border-radius:4px;color:#fff;cursor:pointer\">Cancel</button>';";
-    html += "modalContent.innerHTML+='<button onclick=\"saveNewEquipment()\" style=\"padding:8px 16px;background:#22c55e;border:none;border-radius:4px;color:#000;cursor:pointer;font-weight:bold\">Add Item</button>';";
-    html += "modalContent.innerHTML+='</div>';";
-    html += "modal.appendChild(modalContent);";
-    html += "modal.onclick=(e)=>{if(e.target===modal)closeAddModal();};";
-    html += "document.body.appendChild(modal);";
-    html += "document.querySelectorAll('.cat-title').forEach((catEl,idx)=>{";
-    html += "let catText=catEl.textContent.trim();";
-    html += "let countEl=catEl.querySelector('.cat-count');";
-    html += "if(countEl){catText=catText.replace(countEl.textContent,'').trim();}";
-    html += "let option=document.createElement('option');";
-    html += "option.value=idx;";
-    html += "option.textContent=catText;";
-    html += "document.getElementById('add-category').appendChild(option);});";
-    html += "document.getElementById('add-name').focus();}";
-
-    html += "function closeAddModal(){";
-    html += "let modal=document.getElementById('addModal');";
-    html += "if(modal){modal.remove();return;}";
-    html += "modal=document.querySelector('[style*=\"position:fixed\"]');";
-    html += "if(modal)modal.remove();}";
+    html += "if(String(realIdx)==String(editingCategory))option.selected=true;";
+    html += "categorySelect.appendChild(option);});";
+    html += "document.getElementById('edit-name').value=currentName;";
+    html += "document.getElementById('edit-name').focus();";
+    html += "}";
 
     html += "function saveNewConsumable(){";
     html += "let name=document.getElementById('add-name').value.trim();";
@@ -2193,23 +2339,23 @@ void handleInventory() {
     html += "let trailer=document.getElementById('add-trailer').value;";
     html += "if(!name){alert('Name cannot be empty');return;}";
     html += "let params='cat='+category+'&name='+encodeURIComponent(name)+'&livesInTrailer='+trailer;";
-    html += "fetch('/inventory/add?'+params).then(r=>{";
+    html += "fetch('/inventory/add?'+params).then(async r=>{";
     html += "if(r.ok){closeAddModal();";
     html += "let currentTab=document.querySelector('.tab.active');";
     html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
-    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Failed to add item');}});}";
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{let t=await r.text();alert('Failed to add item: '+t);}});}";
     
     html += "function saveNewEquipment(){";
     html += "let name=document.getElementById('add-name').value.trim();";
     html += "let category=parseInt(document.getElementById('add-category').value);";
     html += "if(!name){alert('Name cannot be empty');return;}";
     html += "let params='cat='+category+'&name='+encodeURIComponent(name);";
-    html += "fetch('/inventory/add?'+params).then(r=>{";
+    html += "fetch('/inventory/add?'+params).then(async r=>{";
     html += "if(r.ok){closeAddModal();";
     html += "let currentTab=document.querySelector('.tab.active');";
     html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
-    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Failed to add item');}});}";;
-    
+    html += "setTimeout(()=>showTab(tabIndex),100);}else{let t=await r.text();alert('Failed to add item: '+t);}});}";
+
     html += "function deleteItemFromModal(){";
     html += "if(confirm('Delete this item? This cannot be undone.')){";
     html += "fetch('/inventory/remove?cat='+editingCategory+'&item='+editingIndex).then(r=>{";
@@ -2220,30 +2366,27 @@ void handleInventory() {
     
     html += "function saveItemEdit(){";
     html += "let name=document.getElementById('edit-name').value.trim();";
-    html += "let trailer=document.getElementById('edit-trailer').value==='true';";
     html += "let newCategory=parseInt(document.getElementById('edit-category').value);";
     html += "if(!name){alert('Name cannot be empty');return;}";
+    html += "if(editingIsConsumable){";
+    html += "let trailer=document.getElementById('edit-trailer').value==='true';";
     html += "if(newCategory!==editingCategory){";
     html += "let editParams='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name)+'&livesInTrailer='+(trailer?'true':'false');";
     html += "fetch('/inventory/edit-consumable?'+editParams).then(r=>{";
-    html += "if(r.ok){";
-    html += "let moveParams='cat='+editingCategory+'&item='+editingIndex+'&target='+newCategory;";
-    html += "return fetch('/inventory/move-item',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:moveParams});";
-    html += "}else{throw new Error('Edit failed');}";
-    html += "}).then(r=>{";
-    html += "if(r.ok){closeEditModal();";
-    html += "let currentTab=document.querySelector('.tab.active');";
-    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
-    html += "setTimeout(()=>showTab(tabIndex),100);}";
-    html += "else{alert('Error moving item to new category');}";
-    html += "}).catch(e=>{alert('Error: '+e.message);});";
+    html += "if(r.ok){let moveParams='cat='+editingCategory+'&item='+editingIndex+'&target='+newCategory;return fetch('/inventory/move-item',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:moveParams});}else{throw new Error('Edit failed');}";
+    html += "}).then(r=>{if(r.ok){closeEditModal();let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Error moving item to new category');}}).catch(e=>{alert('Error: '+e.message);});";
     html += "}else{";
     html += "let params='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name)+'&livesInTrailer='+(trailer?'true':'false');";
-    html += "fetch('/inventory/edit-consumable?'+params).then(r=>{";
-    html += "if(r.ok){closeEditModal();";
-    html += "let currentTab=document.querySelector('.tab.active');";
-    html += "let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);";
-    html += "setTimeout(()=>showTab(tabIndex),100);}else{alert('Edit failed');}});";
+    html += "fetch('/inventory/edit-consumable?'+params).then(r=>{if(r.ok){closeEditModal();let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Edit failed');}});";
+    html += "}";
+    html += "}else{";
+    html += "if(newCategory!==editingCategory){";
+    html += "let editParams='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name);";
+    html += "fetch('/inventory/rename?'+editParams).then(r=>{if(r.ok){let moveParams='cat='+editingCategory+'&item='+editingIndex+'&target='+newCategory;return fetch('/inventory/move-item',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:moveParams});}else{throw new Error('Rename failed');}}).then(r=>{if(r.ok){closeEditModal();let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Error moving item to new category');}}).catch(e=>{alert('Error: '+e.message);});";
+    html += "}else{";
+    html += "let params='cat='+editingCategory+'&item='+editingIndex+'&name='+encodeURIComponent(name);";
+    html += "fetch('/inventory/rename?'+params).then(r=>{if(r.ok){closeEditModal();let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);setTimeout(()=>showTab(tabIndex),100);}else{alert('Rename failed');}});";
+    html += "}";
     html += "}";
     html += "}";
 
@@ -2268,25 +2411,25 @@ void handleInventory() {
     html += "if(data.lowCount>0)countHTML+=' + ';}";
     html += "if(data.lowCount>0)countHTML+='<span style=\"color:#f59e0b\">'+data.lowCount+' LOW</span>';";
     html += "header.innerHTML=countHTML;";
-    html += "let html='<div style=\"margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap\">';";
-    html += "html+='<button onclick=\"selectItems(\\'all\\')\" style=\"padding:6px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select All</button>';";
-    html += "html+='<button onclick=\"selectItems(\\'out\\')\" style=\"padding:6px 12px;background:rgba(239,68,68,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select Out Only</button>';";
-    html += "html+='<button onclick=\"selectItems(\\'low\\')\" style=\"padding:6px 12px;background:rgba(245,158,11,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select Low Only</button>';";
-    html += "html+='<button onclick=\"selectItems(\\'none\\')\" style=\"padding:6px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Deselect All</button></div>';";
+    html += "let shopHtml='<div style=\"margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap\">';";
+    html += "shopHtml+='<button onclick=\"selectItems(\\'all\\')\" style=\"padding:6px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select All</button>';";
+    html += "shopHtml+='<button onclick=\"selectItems(\\'out\\')\" style=\"padding:6px 12px;background:rgba(239,68,68,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select Out Only</button>';";
+    html += "shopHtml+='<button onclick=\"selectItems(\\'low\\')\" style=\"padding:6px 12px;background:rgba(245,158,11,0.3);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Select Low Only</button>';";
+    html += "shopHtml+='<button onclick=\"selectItems(\\'none\\')\" style=\"padding:6px 12px;background:rgba(255,255,255,0.1);border:none;border-radius:6px;color:#fff;font-size:12px;cursor:pointer\">Deselect All</button></div>';";
     html += "data.items.forEach(item=>{";
     html += "let statusClass=item.status==2?'out':'low';";
     html += "let badge=item.status==2?'OUT':'LOW';";
-    html += "html+='<div class=\"shop-item '+statusClass+'\" data-cat=\"'+item.cat+'\" data-item=\"'+item.item+'\" data-status=\"'+item.status+'\" data-trailer=\"'+item.livesInTrailer+'\">';";
-    html += "html+='<input type=\"checkbox\" class=\"shop-check\" style=\"width:18px;height:18px;margin-right:10px;cursor:pointer\">';";
-    html += "html+='<span style=\"margin-right:8px;font-size:14px\">'+(item.livesInTrailer?'🚚':'🛒')+'</span>';";
-    html += "html+='<div style=\"flex:1\"><div style=\"font-weight:bold;margin-bottom:2px\">'+item.name+'</div>';";
-    html += "html+='<div style=\"font-size:13px;opacity:0.8\">'+item.category+'</div></div>';";
-    html += "html+='<span class=\"badge '+statusClass+'\">'+badge+'</span></div>';});";
-    html += "container.innerHTML=html;container.classList.add('expanded');";
+    html += "shopHtml+='<div class=\"shop-item '+statusClass+'\" data-cat=\"'+item.cat+'\" data-item=\"'+item.item+'\" data-status=\"'+item.status+'\" data-trailer=\"'+item.livesInTrailer+'\">';";
+    html += "shopHtml+='<input type=\"checkbox\" class=\"shop-check\" style=\"width:18px;height:18px;margin-right:10px;cursor:pointer\">';";
+    html += "shopHtml+='<span style=\"margin-right:8px;font-size:14px\">'+(item.livesInTrailer?'🚚':'🛒')+'</span>';";
+    html += "shopHtml+='<div style=\"flex:1\"><div style=\"font-weight:bold;margin-bottom:2px\">'+item.name+'</div>';";
+    html += "shopHtml+='<div style=\"font-size:13px;opacity:0.8\">'+item.category+'</div></div>';";
+    html += "shopHtml+='<span class=\"badge '+statusClass+'\">'+badge+'</span></div>';});";
+    html += "container.innerHTML=shopHtml;container.classList.add('expanded');";
     html += "setTimeout(updateShoppingTileCounts,100);}});}";
 
     // Add Category Dialog Functions
-    html += "function showAddCategoryDialog(isConsumable){";
+    html += "function showTab(n){";
     html += "let type=isConsumable?'consumable':'equipment';";
     html += "let typeLabel=isConsumable?'Consumable':'Equipment';";
     html += "let name=prompt('Enter '+typeLabel+' category name:');";
@@ -2305,10 +2448,10 @@ void handleInventory() {
     html += "else if(subcategory=='3')subcategory='optional';";
     html += "else{alert('Invalid selection. Please choose 1, 2, or 3.');return;}";
     html += "url+='&subcategory='+subcategory;}";
-    html += "fetch(url).then(r=>{if(r.ok){alert('✅ Category \"'+name+'\" created!');loadTabContent(currentTab);}";
-    html += "else{r.text().then(msg=>alert('❌ Error: '+msg));}});}";
+    html += "fetch(url).then(r=>{if(r.ok){alert('✅ Category \"'+name+'\" created!');let currentTab=document.querySelector('.tab.active');let tabIndex=Array.from(currentTab.parentNode.children).indexOf(currentTab);loadTabContent(tabIndex);}";
+    html += "else{r.text().then(msg=>alert('❌ Error: '+msg));}});}";  
+    html += "}";  // Close showAddCategoryDialog function
     html += "</script></body></html>";
-
     server.send(200, "text/html", html);
 }
 
@@ -2934,6 +3077,22 @@ void handleInventoryImportCSV() {
                     
                     inventory.push_back(newCategory);
                     categoryIndex = inventory.size() - 1;
+                } else {
+                    // Update existing category's subcategory based on CSV data
+                    if (categoryTypeStr == "CONSUMABLES") {
+                        inventory[categoryIndex].isConsumable = true;
+                        inventory[categoryIndex].subcategory = SUBCATEGORY_TRAILER; // Consumables always use SUBCATEGORY_TRAILER
+                    } else {
+                        inventory[categoryIndex].isConsumable = false; // Equipment
+                        if (categoryTypeStr == "TRAILER") inventory[categoryIndex].subcategory = SUBCATEGORY_TRAILER;
+                        else if (categoryTypeStr == "ESSENTIALS") inventory[categoryIndex].subcategory = SUBCATEGORY_ESSENTIALS;
+                        else if (categoryTypeStr == "OPTIONAL") inventory[categoryIndex].subcategory = SUBCATEGORY_OPTIONAL;
+                        else {
+                            // Fallback: auto-detect based on status
+                            inventory[categoryIndex].isConsumable = (statusStr != "OK" || checkedStr == "N/A");
+                            inventory[categoryIndex].subcategory = inventory[categoryIndex].isConsumable ? SUBCATEGORY_TRAILER : SUBCATEGORY_OPTIONAL;
+                        }
+                    }
                 }
                 
                 // Add item to category
